@@ -1,0 +1,20 @@
+{
+  "name": "urban-pr-review-codefirst",
+  "description": "Code-first (defineFlow) durable, multi-round GitHub PR convergence orchestrated by Nano.",
+  "main": "main.ts",
+  "lang": "deno",
+  "app": "console",
+  "autoDeploy": [],
+  "template": "workflow-starter",
+  "toolchain": {
+    "run": [
+      "deno",
+      "run",
+      "--allow-net",
+      "--allow-read",
+      "--allow-env",
+      "main.ts"
+    ],
+    "compile": []
+  }
+}

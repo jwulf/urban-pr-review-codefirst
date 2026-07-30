@@ -1,0 +1,20 @@
+{
+  "name": "urban-pr-review-codefirst",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "main.ts",
+  "scripts": {
+    "start": "deno task start",
+    "submit": "deno task submit",
+    "review-ready": "deno task review-ready",
+    "answer": "deno task answer"
+  },
+  "dependencies": {
+    "@nanobpm/workflow": "^0.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22",
+    "bpmn-auto-layout": "^2.0.0-alpha.2"
+  }
+}

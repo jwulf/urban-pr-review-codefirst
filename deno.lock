@@ -1,0 +1,77 @@
+{
+  "version": "5",
+  "specifiers": {
+    "npm:@nanobpm/workflow@0.3": "0.3.0_bpmn-auto-layout@2.0.0-alpha.2",
+    "npm:@types/node@22": "22.20.1",
+    "npm:bpmn-auto-layout@^2.0.0-alpha.2": "2.0.0-alpha.2"
+  },
+  "npm": {
+    "@nanobpm/workflow@0.3.0_bpmn-auto-layout@2.0.0-alpha.2": {
+      "integrity": "sha512-idZuikc0JQE3Lw85WPQoM6z3KXhVZQo7xGPo/5ubLzWmMFxMBZMLuCbUrEgKXOKhsu3DiXqJP52HOqPK1KDVhg==",
+      "dependencies": [
+        "bpmn-auto-layout"
+      ],
+      "optionalPeers": [
+        "bpmn-auto-layout"
+      ]
+    },
+    "@types/node@22.20.1": {
+      "integrity": "sha512-EANqOCF9QFyra+4pfxUcX9STKJpCLjMbObVzljIJomAWSnuSIEAvyzEU53GaajbXJEgdh0iEcPL+DGvpUd4k1Q==",
+      "dependencies": [
+        "undici-types"
+      ]
+    },
+    "bpmn-auto-layout@2.0.0-alpha.2": {
+      "integrity": "sha512-Xg8BoRMijfECgWljIlE44hbGDAuF0BkjJuLfd5o3oOx1ileL06EJQhlgO040xFIegfjxq91dVFAoxCL17wo53A==",
+      "dependencies": [
+        "bpmn-moddle",
+        "min-dash"
+      ],
+      "bin": true
+    },
+    "bpmn-moddle@10.1.0": {
+      "integrity": "sha512-k9Vl97hiFwlr4bJTQ5+pZp21bmrQwil5jnMQ30wF8vney2/WnIcJmWwYzRTAKFVoViTGowtDfbO5rGEF4viO0w==",
+      "dependencies": [
+        "min-dash",
+        "moddle",
+        "moddle-xml"
+      ]
+    },
+    "min-dash@5.1.0": {
+      "integrity": "sha512-HAvN6XzmCQj+js43G9sJRRw8kj/7DvoxN7qhoIN9Xo5ZN1NMljtpyKs/NunXmw0QSWwlgZzNv6tLeEa4xaZ0tg=="
+    },
+    "moddle-xml@12.1.0_moddle@8.2.1": {
+      "integrity": "sha512-+m50j9/MFGhvWbLJoKSSjQj3uv7SYm2w5i2lfv6goWarlWW1Nd0A31NYUXmKuWnEZ8Mm/bH1RZYtuf4x8ptY7g==",
+      "dependencies": [
+        "min-dash",
+        "moddle",
+        "saxen"
+      ]
+    },
+    "moddle@8.2.1": {
+      "integrity": "sha512-20qzO/ZpMGO9j9gdQgXk9bfGxb9wA3JKnGth/21YZKODLrZE4RW/uVMIL5pTskYm34Z61DucBEPkq93qByNsBQ==",
+      "dependencies": [
+        "min-dash"
+      ]
+    },
+    "saxen@11.1.1": {
+      "integrity": "sha512-J4BkmJFaM7VgE7pgkFGsNEcqqM3h7+Mz80vfLWFhx7uNOCOXIu6LLjQHYWNejdst3pf/3JUaBIG9+pkk1umlow=="
+    },
+    "undici-types@6.21.0": {
+      "integrity": "sha512-iwDZqg0QAGrg9Rav5H4n0M64c3mkR59cJ6wQp+7C4nI0gsmExaedaYLNO44eT4AtBBwjbTiGPMlt2Md0T9H9JQ=="
+    }
+  },
+  "workspace": {
+    "dependencies": [
+      "npm:@nanobpm/workflow@0.3",
+      "npm:bpmn-auto-layout@^2.0.0-alpha.2"
+    ],
+    "packageJson": {
+      "dependencies": [
+        "npm:@nanobpm/workflow@0.3",
+        "npm:@types/node@22",
+        "npm:bpmn-auto-layout@^2.0.0-alpha.2"
+      ]
+    }
+  }
+}
