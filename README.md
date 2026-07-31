@@ -17,6 +17,152 @@ them (`convergence-loop.bpmn` + `workers/*/worker.ts`), code-first writes them
 (`workflows/convergence-loop.ts`, with the record steps hosted in-process). See
 [Persistence](#persistence) and [Frontend](#frontend) below.
 
+## HOWTO: run agents that converge PRs for you, all day
+
+### The problem this solves
+
+Driving a PR to convergence is mostly *waiting*: open a review, wait 5–15 min for
+the reviewer, address the comments, re-request, wait again — often ten rounds
+deep, escalating to a human only when the reviewer is stuck. If a single agent
+babysits one PR, it spends almost all of its time **idle-polling** a review that
+hasn't landed yet. That is wasted wall-clock and a wasted worker slot.
+
+This app inverts that. **The BPMN process the SDK derives owns the durable wait**
+between rounds (a real `w.signal` message-catch event), so no agent is ever parked
+holding a job slot while a review is pending. Instead you **hire a couple of agent
+workers once**, and they pull `senior:pr-review` jobs from *whatever PR is ready
+right now* — alternating across all in-flight reviews. Two agents can keep a dozen
+PRs converging in parallel, and they only run when there is actual work to do.
+
+Because the `review-round` task overrides its job type to **`senior:pr-review`**
+(via `w.task("review-round", { jobType: "senior:pr-review" })`), the *same* hired
+reviewer services both this code-first app and the model-first
+[urban-pr-review](../urban-pr-review). Set it up by: **(1)** running this app,
+**(2)** submitting PRs, and **(3)** hiring agent workers with
+[`c8ctl nano`](https://github.com/jwulf/c8ctl-plugin-nano).
+
+### 0. Prerequisites
+
+- A running **Nano gateway/engine** (default `http://localhost:8080`). This is
+  what the app deploys to and what agents pull jobs from.
+- **[Deno](https://deno.land/)** (to run this app) and the **c8ctl CLI with the
+  `nano` plugin** installed (to hire/run agents).
+- On each machine that will *host an agent*: the **GitHub CLI** logged in
+  (`gh auth login`) or a `GITHUB_TOKEN`/`GH_TOKEN` in the environment, and the
+  agent harness itself — e.g. the **[Copilot CLI](https://github.com/github/copilot-cli)**
+  (`copilot`).
+
+### 1. Install the app into your Nano IDE
+
+Open the Nano console and **Projects → Import by reference**, pointing at this
+app's folder (ADR 0041), or drop a `*.project-ref.json` next to your other
+projects. `nano-ide.ext.json` marks it as an example. You can also just run it
+standalone (next step) — the IDE import is only needed to launch/manage it from
+the console.
+
+### 2. Start the app
+
+```sh
+deno task start        # → http://localhost:3000
+```
+
+That applies the DB migrations, deploys the derived flow, hosts the in-process
+`w.run` record steps, serves the web UI at **<http://localhost:3000>**, and runs
+the review-ready poller (which needs `GITHUB_TOKEN` to watch GitHub — without it,
+re-reviews come only from the UI/CLI). Point it at a non-default gateway with
+`NANOBPMN_BASE_URL`; change the port with `PR_REVIEW_PORT`.
+
+### 3. Submit a PR
+
+From the web UI, or from the CLI:
+
+```sh
+deno task submit https://github.com/owner/repo/pull/42 5   # 5 = maxRounds
+```
+
+Each submitted PR starts one durable `convergence-loop` instance that parks until
+an agent services its `senior:pr-review` round.
+
+### 4. Hire an agent worker
+
+An agent is a CLI harness (Copilot CLI here) turned into a Nano job worker. Hire a
+profile whose **rank + capability** produce the `senior:pr-review` token this
+flow's task emits:
+
+```sh
+c8ctl nano hire \
+  --name reviewer \
+  --rank senior \
+  --capabilities pr-review \
+  --command 'copilot -p - --allow-all-tools' \
+  --model <your-model>
+```
+
+- `--rank senior` + `--capabilities pr-review` makes the worker subscribe to the
+  `senior:pr-review` job type — exactly the token this flow's `review-round` task
+  emits (thanks to the SDK job-type override), so **one profile serves both apps.**
+- `--command 'copilot -p - --allow-all-tools'` starts the Copilot CLI reading its
+  prompt from **stdin** (`-p -`). The harness pipes the whole job JSON (prompt +
+  `job.variables`: `prUrl`, `repo`, `prNumber`, `round`, `answer?`) to stdin; the
+  review-round instructions tell the agent how to read it and where to write its
+  result.
+- **`--allow-all-tools` is the crucial flag.** Without it, Copilot pauses to ask
+  permission before each tool call — and an unattended worker has no human to
+  answer, so the job stalls. `--allow-all-tools` lets it run the whole round
+  non-interactively. (Pair with `--deny-tool` to blocklist specific tools.)
+
+  > ⚠️ **Only enable `--allow-all-tools` for code and hosts you trust.** It grants
+  > the agent unattended, broad permissions (shell, file writes, network). Each
+  > job runs in a throwaway per-job workspace (see below), but the worker still
+  > runs as your user on the host — don't point it at untrusted PRs on a shared
+  > machine. Use `--deny-tool` to narrow it, or a container sandbox for stronger
+  > isolation.
+
+> If you'd rather not override the job type in the flow, you can instead leave the
+> derived `convergence-loop:review-round` type and point a worker at it explicitly
+> with `c8ctl nano work reviewer --job-type convergence-loop:review-round`. This
+> app ships with the `senior:pr-review` override so it shares a reviewer with the
+> model-first app out of the box.
+
+### 5. Put the agent to work
+
+```sh
+c8ctl nano work reviewer      # polls for senior:pr-review jobs until Ctrl-C
+```
+
+Now every PR you submit gets picked up automatically. Start a **second** worker
+(same command, another terminal or another machine) and the two alternate across
+whichever PRs are ready — that is the idle-time you reclaim. Run more than one job
+at once per worker with `--max-parallel 2`.
+
+### Isolation — each job gets its own clean workspace
+
+In the default **host mode** (`--sandbox none`), the worker provisions a
+**throwaway, per-job workspace**: a fresh clone under `<state>/agent-runs/run-*`
+checked out on the PR's head branch, exposed to the agent as `AGENT_WORKSPACE` /
+`REPO_URL` / `REPO_BRANCH` / `REPO_REF`, and **reaped after the job**. So multiple
+agents on one host don't step on each other. Host workers inherit *your*
+`gh`/`GITHUB_TOKEN` login, so no extra auth is needed. Docker/podman sandboxes
+exist (`--sandbox docker --image …`) for stronger isolation, but container-side
+git provisioning is a later increment — container jobs don't clone yet, and don't
+inherit your host login (pass credentials via `--secret-resolver host` /
+`secretRefs`). For the review loop, **host mode is the recommended setup.**
+
+### Run it across spare hardware (incl. a Raspberry Pi)
+
+Nano ships ARM binaries (arm64/armv7/armv6), so the whole thing scales down nicely:
+
+- **All-in-one:** run the gateway, this app, and one or two workers on your laptop.
+- **Distributed:** run the **Nano gateway on a Raspberry Pi** (always-on, low
+  power), run this app anywhere, and put **agent workers on spare machines** — each
+  worker just needs the c8ctl CLI, the Copilot CLI logged in, and
+  `NANOBPMN_BASE_URL` pointed at the Pi. Add or remove workers at will; the BPMN
+  process holds all durable state, so workers are stateless and disposable.
+
+The payoff: instead of one agent burning wall-clock polling a single PR, a small
+pool of always-available workers keeps every open review converging — and idles to
+zero cost when there's nothing to do.
+
 ## The flow
 
 `workflows/convergence-loop.ts`:
@@ -35,8 +181,10 @@ loop:
 ```
 
 - **`review-round`** is a `w.task` — an **external** worker. Point a coding-agent
-  harness at the job type `convergence-loop:review-round` (e.g. `c8ctl nano hire`).
-  The app never hosts or names it; it only owns the durable orchestration around it.
+  harness at the job type `senior:pr-review` (e.g. a `c8ctl nano hire`d rank
+  `senior` + capability `pr-review` profile — the same one that services the
+  model-first app). The app never hosts or names it; it only owns the durable
+  orchestration around it.
 - **`persist-*`** and **`persist-converged`** are `w.run` — app-hosted handlers.
   `persist-round` returns `{ round: round + 1 }`; that return value (not an
   ioMapping) is the loop's only state mutation.
@@ -55,7 +203,7 @@ the generated BPMN as `nano:shape` + `io.nanobpm.dataEnvelope` properties.
 
 | Step | Derived job type / message |
 | --- | --- |
-| `review-round` (external) | `convergence-loop:review-round` |
+| `review-round` (external) | `senior:pr-review` (overridden via `w.task("review-round", { jobType: "senior:pr-review" })`) |
 | `persist-round` | `convergence-loop:persist-round` |
 | `persist-escalation` | `convergence-loop:persist-escalation` |
 | `persist-escalation-maxrounds` | `convergence-loop:persist-escalation-maxrounds` |
@@ -95,8 +243,8 @@ deno task purge
 ```
 
 The reviewer itself is not started by `deno task start` — it is the external
-`convergence-loop:review-round` job. Host it with a coding-agent harness so the
-automated review is fully decoupled from the durable orchestration.
+`senior:pr-review` job. Host it with a coding-agent harness so the automated
+review is fully decoupled from the durable orchestration.
 
 Environment overrides: `PR_REVIEW_PORT` (default `3000`), `NANOBPMN_BASE_URL`
 (gateway), `NANO_APP_DB_URL` (default `file:./app.db`), `NANO_PR_POLL_MS`

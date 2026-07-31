@@ -29,7 +29,7 @@
     "answer": "deno task answer"
   },
   "dependencies": {
-    "@nanobpm/workflow": "^0.3.0"
+    "@nanobpm/workflow": "^0.4.0"
   },
   "devDependencies": {
     "@types/node": "^22",

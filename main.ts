@@ -13,10 +13,11 @@
 //      intercepting only the three app-specific actions (start/cancel/answer),
 //   3. runs the review-ready poller.
 //
-// The reviewer agent (`convergence-loop:review-round`) is deliberately NOT hosted
+// The reviewer agent (job type `senior:pr-review`) is deliberately NOT hosted
 // here — it is an EXTERNAL worker. Point a coding-agent harness at that job type
-// (e.g. `c8ctl nano hire`) so the automated review stays decoupled from the
-// durable orchestration.
+// (e.g. a `c8ctl nano hire`d rank `senior` + capability `pr-review` profile, the
+// same one that services the model-first urban-pr-review app) so the automated
+// review stays decoupled from the durable orchestration.
 import { externalJobTypes, Worker, WorkflowClient } from "@nanobpm/workflow";
 import type { JsonObject } from "@nanobpm/workflow";
 import { openDomain } from "@nanobpm/domain";

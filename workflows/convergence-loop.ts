@@ -152,10 +152,13 @@ export const convergenceLoop = defineFlow(
   "convergence-loop", dataEnvelopes,
   (w) => {
     w.loop((b) => {
-      // The reviewer agent. An EXTERNAL worker — a coding-agent harness — services
-      // the job type `convergence-loop:review-round`. The app never names it; it
-      // only owns the durable orchestration around it.
-      b.task("review-round");
+      // The reviewer agent. An EXTERNAL worker — a coding-agent harness —
+      // services this task. The step name stays `review-round` (the BPMN element
+      // id), but we override the job type to `senior:pr-review` so the same
+      // hired reviewer that drives the model-first urban-pr-review app — a
+      // `c8ctl nano hire`d profile with rank `senior` + capability `pr-review` —
+      // services this flow too, without a `--job-type` override on `work`.
+      b.task("review-round", { jobType: "senior:pr-review" });
 
       b.switch("status", {
         // Converged: record the terminal state and leave the loop.
