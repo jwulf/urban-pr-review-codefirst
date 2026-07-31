@@ -1,0 +1,17 @@
+{
+  "$schema": "https://nanobpm.io/spec-app/nano-app.schema.json",
+  "schemaVersion": 1,
+  "id": "urban-pr-review-codefirst",
+  "name": "PR Review Convergence (code-first)",
+  "codename": "urban-pr-review-codefirst",
+  "data": {
+    "default": "app",
+    "sources": {
+      "app": {
+        "driver": "sqlite",
+        "url": "${NANO_APP_DB_URL:-file:./app.db}",
+        "migrations": "db/migrations"
+      }
+    }
+  }
+}

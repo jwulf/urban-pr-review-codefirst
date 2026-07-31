@@ -1,11 +1,29 @@
 {
-  "name": "urban-pr-review-codefirst",
-  "version": "0.0.0",
-  "private": true,
+  "name": "@nanobpm/urban-pr-review-codefirst",
+  "version": "0.1.0",
+  "description": "Code-first (defineFlow) expression of the Nano Urban PR-review convergence app: one durable multi-round loop per PR, BPMN model derived from TypeScript.",
   "type": "module",
   "main": "main.ts",
+  "author": "Josh Wulf <josh.wulf@camunda.com>",
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/jwulf/urban-pr-review-codefirst#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jwulf/urban-pr-review-codefirst.git"
+  },
+  "bugs": {
+    "url": "https://github.com/jwulf/urban-pr-review-codefirst/issues"
+  },
+  "keywords": [
+    "nano-ide-ext",
+    "nano-ide-agentic-sdlc"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "start": "deno task start",
+    "purge": "deno task purge",
     "submit": "deno task submit",
     "review-ready": "deno task review-ready",
     "answer": "deno task answer"
@@ -15,6 +33,9 @@
   },
   "devDependencies": {
     "@types/node": "^22",
-    "bpmn-auto-layout": "^2.0.0-alpha.2"
+    "bpmn-auto-layout": "^2.0.0-alpha.2",
+    "semantic-release": "^24.2.9",
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/git": "^10.0.1"
   }
 }

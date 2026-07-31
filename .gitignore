@@ -2,3 +2,16 @@ node_modules/
 dist/
 *.bpmn
 .DS_Store
+
+# Generated Nano SDK facades (materialised by the tooling at run/generate time).
+/nano-generated
+nano-generated/
+
+# Deno dependency cache (local DENO_DIR)
+.deno-cache/
+
+# Runtime app database (migrated from db/migrations at startup)
+app.db
+app.db-*
+*.sqlite
+*.sqlite-*

@@ -12,7 +12,9 @@
       "run",
       "--allow-net",
       "--allow-read",
+      "--allow-write",
       "--allow-env",
+      "--allow-run=deno",
       "main.ts"
     ],
     "compile": []

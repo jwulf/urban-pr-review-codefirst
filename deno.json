@@ -2,12 +2,19 @@
   "compilerOptions": {
     "lib": ["deno.window", "deno.ns", "esnext", "dom"]
   },
+  "lint": {
+    "exclude": [".deno-cache/", "nano-generated/"]
+  },
   "imports": {
     "@nanobpm/workflow": "npm:@nanobpm/workflow@^0.3.0",
+    "@nanobpm/domain": "./nano-generated/domain.ts",
+    "@nanobpm/data": "./nano-generated/data-sdk.ts",
+    "@nanobpm/app": "./nano-generated/app-pages.ts",
     "bpmn-auto-layout": "npm:bpmn-auto-layout@^2.0.0-alpha.2"
   },
   "tasks": {
-    "start": "deno run --allow-net --allow-read --allow-env main.ts",
+    "start": "deno run --allow-net --allow-read --allow-write --allow-env --allow-run=deno main.ts",
+    "purge": "deno run --allow-read --allow-write --allow-env --allow-run=deno scripts/purge-db.ts",
     "submit": "deno run --allow-net --allow-read --allow-env scripts/submit.ts",
     "review-ready": "deno run --allow-net --allow-read --allow-env scripts/review-ready.ts",
     "answer": "deno run --allow-net --allow-read --allow-env scripts/answer.ts"

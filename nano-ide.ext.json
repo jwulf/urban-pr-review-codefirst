@@ -1,0 +1,7 @@
+{
+  "id": "urban-pr-review-codefirst",
+  "kind": "example",
+  "displayName": "Urban PR Review — code-first (defineFlow)",
+  "appDir": ".",
+  "summary": "Code-first (@nanobpm/workflow defineFlow) durable multi-round loop that drives a GitHub PR to convergence against an automated reviewer — BPMN model derived from TypeScript, escalating to a human when the reviewer is stuck or a round cap is hit. Ships SQLite persistence and a schema-driven web UI."
+}

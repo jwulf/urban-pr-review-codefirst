@@ -1,4 +1,49 @@
 import { defineFlow, envelope } from "@nanobpm/workflow";
+import { openDomain, type Domain } from "@nanobpm/domain";
+
+// ---------------------------------------------------------------------------
+// Persistence (parity with the model-first `urban-pr-review`). The `w.run`
+// handlers below are the app-owned record steps — the same writes the sibling
+// app makes from `workers/{persist-round,persist-escalation,finalize}` — but
+// hosted in-process by `@nanobpm/workflow`'s Worker instead of as standalone
+// `defineWorker`s. Data access goes through the typed data object
+// (`@nanobpm/domain`), not hand-written SQL.
+//
+// The datasource is opened lazily and memoised on first persist, so the thin
+// CLI scripts (submit/answer/review-ready) can import this flow to start/signal
+// instances without ever touching the DB — only the worker host that actually
+// runs these handlers opens it.
+// ---------------------------------------------------------------------------
+let _db: Domain | null = null;
+async function db(): Promise<Domain> {
+  return (_db ??= await openDomain("app"));
+}
+
+const nowTs = (): string => new Date().toISOString();
+
+/** Read a string variable off a job, coercing/defaulting as the reference does. */
+function str(vars: Record<string, unknown>, key: string, fallback = ""): string {
+  const val = vars[key];
+  if (typeof val === "string") return val;
+  return val == null ? fallback : String(val);
+}
+
+/** Read an integer variable off a job. */
+function int(vars: Record<string, unknown>, key: string, fallback = 0): number {
+  const val = vars[key];
+  if (typeof val === "number") return val;
+  const n = Number(val);
+  return Number.isFinite(n) ? n : fallback;
+}
+
+// The external reviewer harness records its full (byte-capped) stdout on the
+// result envelope; keep it for audit so a human can see what the agent did this
+// round without re-running it.
+const AGENT_RESULT_KEY = "io.nanobpm.agentResult";
+function transcriptOf(vars: Record<string, unknown>): string | null {
+  const env = vars[AGENT_RESULT_KEY] as { output?: unknown } | undefined;
+  return typeof env?.output === "string" ? env.output : null;
+}
 
 // ---------------------------------------------------------------------------
 // Typed data envelopes (ADR 0045). Each is lifted into the generated BPMN as a
@@ -17,7 +62,7 @@ const ReviewRoundIn = envelope("ReviewRoundIn", {
   prompt: "string",
   // Present only after a human answered an escalation and we re-review.
   answer: { type: "string", optional: true },
-});
+}); 
 
 /** What the reviewer agent returns: a verdict plus a human-readable summary. */
 const ReviewRoundOut = envelope("ReviewRoundOut", {
@@ -70,6 +115,16 @@ const EscalationAnswered = envelope("EscalationAnswered", {
   escalationId: { type: "integer", optional: true },
 });
 
+const dataEnvelopes =  {
+    "review-round": { in: ReviewRoundIn, out: ReviewRoundOut },
+    "persist-round": { in: PersistRoundIn, out: RoundAdvanced },
+    "persist-escalation": { in: PersistEscalationIn },
+    "persist-escalation-maxrounds": { in: PersistEscalationIn },
+    "persist-converged": { in: FinalizeIn },
+    "wait-review": { in: ReviewReady },
+    "wait-answer": { in: EscalationAnswered },
+  }
+
 // ---------------------------------------------------------------------------
 // The convergence loop. This is the code-first expression of urban-pr-review's
 // `convergence-loop.bpmn`: a durable, multi-round loop that drives a PR to
@@ -94,16 +149,7 @@ const EscalationAnswered = envelope("EscalationAnswered", {
 // `wait-answer` (step names must be unique, so we cannot repeat the signal).
 // ---------------------------------------------------------------------------
 export const convergenceLoop = defineFlow(
-  "convergence-loop",
-  {
-    "review-round": { in: ReviewRoundIn, out: ReviewRoundOut },
-    "persist-round": { in: PersistRoundIn, out: RoundAdvanced },
-    "persist-escalation": { in: PersistEscalationIn },
-    "persist-escalation-maxrounds": { in: PersistEscalationIn },
-    "persist-converged": { in: FinalizeIn },
-    "wait-review": { in: ReviewReady },
-    "wait-answer": { in: EscalationAnswered },
-  },
+  "convergence-loop", dataEnvelopes,
   (w) => {
     w.loop((b) => {
       // The reviewer agent. An EXTERNAL worker — a coding-agent harness — services
@@ -115,7 +161,24 @@ export const convergenceLoop = defineFlow(
         // Converged: record the terminal state and leave the loop.
         converged: (c) => {
           c.run("persist-converged", async (job) => {
-            console.log(`[persist-converged] ${job.variables.prKey} converged at round ${job.variables.round}`);
+            // The PR converged — record the final round and close the PR out.
+            // This is the terminal, idempotent write (parity: workers/finalize).
+            const vars = job.variables as Record<string, unknown>;
+            const prKey = str(vars, "prKey");
+            const round = int(vars, "round");
+            const summary = str(vars, "summary");
+            const ts = nowTs();
+            const d = await db();
+            await d.rounds.insert({
+              pr_key: prKey, round_no: round, status: "converged", summary,
+              transcript: transcriptOf(vars), started_at: ts, ended_at: ts,
+            });
+            await d.pull_requests.update(prKey, {
+              status: "converged", current_round: round, outcome: summary,
+              converged_at: ts, updated_at: ts,
+              open_escalation_id: null, open_escalation_question: null,
+            });
+            console.log(`[persist-converged] ${prKey} converged at round ${round}`);
             return {};
           });
           c.break();
@@ -126,21 +189,58 @@ export const convergenceLoop = defineFlow(
           c.branch("round >= maxRounds", {
             then: (g) => {
               g.run("persist-escalation-maxrounds", async (job) => {
+                // Round cap hit: force a human decision. Record the capped round
+                // and open a blocker escalation (parity: workers/persist-escalation
+                // driven by the process's MAX_ROUNDS guard).
+                const vars = job.variables as Record<string, unknown>;
+                const prKey = str(vars, "prKey");
+                const round = int(vars, "round");
+                const summary = str(vars, "summary");
+                const question = "Round cap reached without convergence — merge as-is, or abandon?";
+                const ts = nowTs();
+                const transcript = transcriptOf(vars);
+                const d = await db();
+                await d.rounds.insert({
+                  pr_key: prKey, round_no: round, status: "blocked", summary,
+                  transcript, started_at: ts, ended_at: ts,
+                });
+                const escalationId = await d.escalations.insert({
+                  pr_key: prKey, round_no: round, kind: "blocker", question,
+                  transcript, status: "open", asked_at: ts,
+                });
+                await d.pull_requests.update(prKey, {
+                  status: "escalated", current_round: round, updated_at: ts,
+                  open_escalation_id: Number(escalationId), open_escalation_question: question,
+                });
                 console.log(
-                  `[persist-escalation-maxrounds] ${job.variables.prKey} hit the round cap at round ${job.variables.round}`,
+                  `[persist-escalation-maxrounds] ${prKey} hit the round cap at round ${round}`,
                 );
-                // Force a human decision: mark blocked and ask to proceed or stop.
-                return {
-                  status: "blocked",
-                  question: "Round cap reached without convergence — merge as-is, or abandon?",
-                };
+                // Falls through to the trailing `wait-answer` (human required).
+                return { status: "blocked", question, escalationId: Number(escalationId) };
               });
               // Falls through to the trailing `wait-answer` (human required).
             },
             else: (g) => {
               g.run("persist-round", async (job) => {
-                const round = typeof job.variables.round === "number" ? job.variables.round : 0;
-                console.log(`[persist-round] ${job.variables.prKey} addressed at round ${round}; advancing`);
+                // An addressed round that hasn't converged: record it and park the
+                // PR in `waiting_review` so the poller starts watching for the next
+                // review (parity: workers/persist-round).
+                const vars = job.variables as Record<string, unknown>;
+                const prKey = str(vars, "prKey");
+                const round = int(vars, "round");
+                const status = str(vars, "status", "addressed");
+                const summary = str(vars, "summary");
+                const ts = nowTs();
+                const d = await db();
+                await d.rounds.insert({
+                  pr_key: prKey, round_no: round, status, summary,
+                  transcript: transcriptOf(vars), started_at: ts, ended_at: ts,
+                });
+                await d.pull_requests.update(prKey, {
+                  status: "waiting_review", current_round: round,
+                  waiting_since: ts, updated_at: ts,
+                });
+                console.log(`[persist-round] ${prKey} addressed at round ${round}; advancing`);
                 // The loop's only state mutation lives here (not in an ioMapping):
                 // advance the round so the next review-round sees round+1.
                 return { round: round + 1 };
@@ -154,10 +254,36 @@ export const convergenceLoop = defineFlow(
         // needs_input / blocked: escalate to a human.
         default: (c) => {
           c.run("persist-escalation", async (job) => {
+            // needs_input / blocked: record the round that raised the escalation
+            // and open an escalation row for a human to answer (parity:
+            // workers/persist-escalation, agent-raised path).
+            const vars = job.variables as Record<string, unknown>;
+            const prKey = str(vars, "prKey");
+            const round = int(vars, "round");
+            const status = str(vars, "status", "needs_input");
+            const summary = str(vars, "summary");
+            const question = str(vars, "question") || "(no question provided)";
+            const kind = status === "needs_input" ? "question" : "blocker";
+            const ts = nowTs();
+            const transcript = transcriptOf(vars);
+            const d = await db();
+            await d.rounds.insert({
+              pr_key: prKey, round_no: round, status, summary,
+              transcript, started_at: ts, ended_at: ts,
+            });
+            const escalationId = await d.escalations.insert({
+              pr_key: prKey, round_no: round, kind, question,
+              transcript, status: "open", asked_at: ts,
+            });
+            await d.pull_requests.update(prKey, {
+              status: "escalated", current_round: round, updated_at: ts,
+              open_escalation_id: Number(escalationId), open_escalation_question: question,
+            });
             console.log(
-              `[persist-escalation] ${job.variables.prKey} escalated (${job.variables.status}) at round ${job.variables.round}`,
+              `[persist-escalation] ${prKey} escalated (${status}) at round ${round}`,
             );
-            return {};
+            // Falls through to the trailing `wait-answer` (human required).
+            return { escalationId: Number(escalationId) };
           });
           // Falls through to the trailing `wait-answer` (human required).
         },
