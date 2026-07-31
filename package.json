@@ -36,6 +36,10 @@
     "bpmn-auto-layout": "^2.0.0-alpha.2",
     "semantic-release": "^24.2.9",
     "@semantic-release/changelog": "^6.0.3",
-    "@semantic-release/git": "^10.0.1"
+    "@semantic-release/git": "^10.0.1",
+    "@semantic-release/npm": "^13.1.5"
+  },
+  "overrides": {
+    "@semantic-release/npm": "^13.1.5"
   }
 }
