@@ -2,13 +2,13 @@
   "$schema": "https://unpkg.com/@camunda/zeebe-element-templates-json-schema@0.44.0/resources/schema.json",
   "id": "io.nanobpm.urban.pr-review-round-codefirst",
   "name": "PR Review Round (agent, code-first)",
-  "description": "One decoupled review round serviced by an external agent (e.g. a Copilot instance via `c8ctl nano work`). The agent reads the latest review, addresses it, pushes, re-requests review, and returns a structured status. Mirrors the model-first template, bound to the code-first derived job type.",
+  "description": "One decoupled review round serviced by an external agent (e.g. a Copilot instance via `c8ctl nano work`). The agent reads the latest review, addresses it, pushes, re-requests review, and returns a structured status. Mirrors the model-first template, bound to the shared `senior:pr-review` reviewer job type the flow now emits.",
   "appliesTo": ["bpmn:Task"],
   "elementType": { "value": "bpmn:ServiceTask" },
   "properties": [
     {
       "type": "Hidden",
-      "value": "convergence-loop:review-round",
+      "value": "senior:pr-review",
       "binding": { "type": "zeebe:taskDefinition:type" }
     },
     {

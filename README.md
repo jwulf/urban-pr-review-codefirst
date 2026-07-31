@@ -111,6 +111,13 @@ c8ctl nano hire \
   answer, so the job stalls. `--allow-all-tools` lets it run the whole round
   non-interactively. (Pair with `--deny-tool` to blocklist specific tools.)
 
+  > ⚠️ **Only enable `--allow-all-tools` for code and hosts you trust.** It grants
+  > the agent unattended, broad permissions (shell, file writes, network). Each
+  > job runs in a throwaway per-job workspace (see below), but the worker still
+  > runs as your user on the host — don't point it at untrusted PRs on a shared
+  > machine. Use `--deny-tool` to narrow it, or a container sandbox for stronger
+  > isolation.
+
 > If you'd rather not override the job type in the flow, you can instead leave the
 > derived `convergence-loop:review-round` type and point a worker at it explicitly
 > with `c8ctl nano work reviewer --job-type convergence-loop:review-round`. This
