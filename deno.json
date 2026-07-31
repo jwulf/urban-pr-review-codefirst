@@ -6,7 +6,7 @@
     "exclude": [".deno-cache/", "nano-generated/"]
   },
   "imports": {
-    "@nanobpm/workflow": "npm:@nanobpm/workflow@^0.3.0",
+    "@nanobpm/workflow": "npm:@nanobpm/workflow@^0.4.0",
     "@nanobpm/domain": "./nano-generated/domain.ts",
     "@nanobpm/data": "./nano-generated/data-sdk.ts",
     "@nanobpm/app": "./nano-generated/app-pages.ts",
