@@ -1,6 +1,6 @@
 {
   "name": "@nanobpm/urban-pr-review-codefirst",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Code-first (defineFlow) expression of the Nano Urban PR-review convergence app: one durable multi-round loop per PR, BPMN model derived from TypeScript.",
   "type": "module",
   "main": "main.ts",
