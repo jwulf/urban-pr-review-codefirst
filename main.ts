@@ -47,7 +47,7 @@ console.log(`deployed ${convergenceLoop.id}`);
 const worker = new Worker({
   baseUrl: BASE_URL,
   workflows: [convergenceLoop],
-  onError: (err) => console.error("worker error:", err.message),
+  onError: (err) => console.error("worker error:", err),
 });
 worker.start();
 
@@ -64,7 +64,7 @@ async function pollLoop(): Promise<void> {
   try {
     await pollOnce(app.data!);
   } catch (err) {
-    console.error("poll error:", err instanceof Error ? err.message : err);
+    console.error("poll error:", err);
   }
   if (!shuttingDown) pollTimer = setTimeout(() => void pollLoop(), POLL_MS);
 }

@@ -257,21 +257,29 @@ Environment overrides: `PR_REVIEW_PORT` (default `3000`), `NANOBPMN_BASE_URL`
 `GITHUB_TOKEN` (enables the poller — without it the poller idles and re-reviews
 come only from the CLI/UI).
 
-## Compile to a standalone binary
+## Compile to a runtime-free binary
 
 The app is authored on Node's built-ins (`node:sqlite`, `node:http`, `process.env`),
-which lets **Deno** cross-compile it into a single self-contained executable — no
-Node, no `node_modules`, no runtime install on the target box:
+which lets **Deno** cross-compile it into a native executable that bundles the Node
+runtime, the npm dependencies and the app's entry code — so the target box needs
+**no Node/`node_modules` install**:
 
 ```sh
 npm run compile        # → dist/urban-pr-review-codefirst  (via `deno compile`)
 ```
 
-The binary embeds the pages, `db/migrations`, prompts and components as assets and
-boots identically to `npm start` (same env vars). Add `--target` in the
-`deno.json` `compile` task to cross-compile for another OS/arch. (Only Node's
-*built-in* `node:sqlite` survives this — a native npm addon like `better-sqlite3`
-would not.)
+> **Not (yet) a single self-contained file.** The Urban runtime loads the app's
+> declarative files — `nano.app.json`, `pages/`, `db/migrations/`, `prompts/` and
+> the `actions/` modules — from the **working directory at runtime** (via
+> `readTextFile` + dynamic `import`), which `deno compile` cannot embed. So ship
+> the binary **alongside those app files** and run it from that directory; it then
+> boots identically to `npm start` (same env vars). A truly self-contained binary
+> needs an *embeddable Urban app* capability in `@nanobpm/urban` (inline
+> pages/migrations + handler refs), tracked separately. Add `--target` in the
+> `deno.json` `compile` task to cross-compile for another OS/arch. (Only Node's
+> *built-in* `node:sqlite` survives this — a native npm addon like
+> `better-sqlite3` would not.)
+
 
 ## Persistence
 
