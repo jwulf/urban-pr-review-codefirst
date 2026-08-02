@@ -9,8 +9,10 @@ const url = process.env.NANO_APP_DB_URL ?? "file:./app.db";
 function decodePath(p: string, urlStr: string): string {
   try {
     return decodeURIComponent(p);
-  } catch {
-    throw new Error(`purge could not decode the path in datasource URL: ${urlStr}`);
+  } catch (e) {
+    throw new Error(`purge could not decode the path in datasource URL: ${urlStr}`, {
+      cause: e,
+    });
   }
 }
 
