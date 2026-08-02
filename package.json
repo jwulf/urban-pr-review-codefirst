@@ -27,13 +27,17 @@
   "scripts": {
     "start": "node --experimental-strip-types main.ts",
     "purge": "node --experimental-strip-types scripts/purge-db.ts",
+    "check": "urban check",
+    "gen": "urban gen",
+    "gen:check": "urban gen --check",
+    "dev": "urban dev",
     "submit": "node --experimental-strip-types scripts/submit.ts",
     "review-ready": "node --experimental-strip-types scripts/review-ready.ts",
     "answer": "node --experimental-strip-types scripts/answer.ts",
     "compile": "deno task compile"
   },
   "dependencies": {
-    "@nanobpm/urban": "^0.11.1"
+    "@nanobpm/urban": "^0.14.0"
   },
   "devDependencies": {
     "@types/node": "^22",
