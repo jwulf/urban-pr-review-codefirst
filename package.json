@@ -22,18 +22,18 @@
     "access": "public"
   },
   "scripts": {
-    "start": "deno task start",
-    "purge": "deno task purge",
-    "submit": "deno task submit",
-    "review-ready": "deno task review-ready",
-    "answer": "deno task answer"
+    "start": "node --experimental-strip-types main.ts",
+    "purge": "node --experimental-strip-types scripts/purge-db.ts",
+    "submit": "node --experimental-strip-types scripts/submit.ts",
+    "review-ready": "node --experimental-strip-types scripts/review-ready.ts",
+    "answer": "node --experimental-strip-types scripts/answer.ts",
+    "compile": "deno task compile"
   },
   "dependencies": {
-    "@nanobpm/workflow": "^0.4.0"
+    "@nanobpm/urban": "^0.11.1"
   },
   "devDependencies": {
     "@types/node": "^22",
-    "bpmn-auto-layout": "^2.0.0-alpha.2",
     "semantic-release": "^24.2.9",
     "@semantic-release/changelog": "^6.0.3",
     "@semantic-release/git": "^10.0.1",

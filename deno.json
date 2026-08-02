@@ -6,17 +6,14 @@
     "exclude": [".deno-cache/", "nano-generated/"]
   },
   "imports": {
-    "@nanobpm/workflow": "npm:@nanobpm/workflow@^0.4.0",
-    "@nanobpm/domain": "./nano-generated/domain.ts",
-    "@nanobpm/data": "./nano-generated/data-sdk.ts",
-    "@nanobpm/app": "./nano-generated/app-pages.ts",
-    "bpmn-auto-layout": "npm:bpmn-auto-layout@^2.0.0-alpha.2"
+    "@nanobpm/urban": "npm:@nanobpm/urban@^0.11.1"
   },
   "tasks": {
-    "start": "deno run --allow-net --allow-read --allow-write --allow-env --allow-run=deno main.ts",
-    "purge": "deno run --allow-read --allow-write --allow-env --allow-run=deno scripts/purge-db.ts",
+    "start": "deno run --allow-net --allow-read --allow-write --allow-env main.ts",
+    "purge": "deno run --allow-read --allow-write --allow-env scripts/purge-db.ts",
     "submit": "deno run --allow-net --allow-read --allow-env scripts/submit.ts",
     "review-ready": "deno run --allow-net --allow-read --allow-env scripts/review-ready.ts",
-    "answer": "deno run --allow-net --allow-read --allow-env scripts/answer.ts"
+    "answer": "deno run --allow-net --allow-read --allow-env scripts/answer.ts",
+    "compile": "deno compile --allow-net --allow-read --allow-write --allow-env --include pages --include db --include prompts --include components -o dist/urban-pr-review-codefirst main.ts"
   }
 }

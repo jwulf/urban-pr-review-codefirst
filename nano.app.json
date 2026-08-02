@@ -13,5 +13,31 @@
         "migrations": "db/migrations"
       }
     }
-  }
+  },
+  "surfaces": {
+    "pages": {
+      "enabled": true,
+      "pagesDir": "pages",
+      "homePage": "home",
+      "sourceName": "app"
+    }
+  },
+  "actions": [
+    {
+      "path": "/app/actions/start/convergence-loop",
+      "module": "actions/start.ts"
+    },
+    {
+      "path": "/app/actions/cancel",
+      "module": "actions/cancel.ts"
+    },
+    {
+      "path": "/app/actions/message",
+      "module": "actions/message.ts"
+    },
+    {
+      "path": "/hooks/submit",
+      "module": "actions/webhook-submit.ts"
+    }
+  ]
 }
