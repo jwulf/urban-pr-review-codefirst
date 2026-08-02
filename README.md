@@ -257,7 +257,7 @@ Environment overrides: `PR_REVIEW_PORT` (default `3000`), `NANOBPMN_BASE_URL`
 `GITHUB_TOKEN` (enables the poller — without it the poller idles and re-reviews
 come only from the CLI/UI).
 
-## Compile to a runtime-free binary
+## Compile to a native binary (no runtime install required)
 
 The app is authored on Node's built-ins (`node:sqlite`, `node:http`, `process.env`),
 which lets **Deno** cross-compile it into a native executable that bundles the Deno
@@ -269,17 +269,21 @@ Node/Deno/`node_modules` install**:
 npm run compile        # → dist/urban-pr-review-codefirst  (via `deno compile`)
 ```
 
-> **Not (yet) a single self-contained file.** The Urban runtime loads the app's
-> declarative files — `nano.app.json`, `pages/`, `db/migrations/`, `prompts/` and
-> the `actions/` modules — from the **working directory at runtime** (via
-> `readTextFile` + dynamic `import`), which `deno compile` cannot embed. So ship
-> the binary **alongside those app files** and run it from that directory; it then
-> boots identically to `npm start` (same env vars). A truly self-contained binary
-> needs an *embeddable Urban app* capability in `@nanobpm/urban` (inline
-> pages/migrations + handler refs), tracked separately. Add `--target` in the
-> `deno.json` `compile` task to cross-compile for another OS/arch. (Only Node's
-> *built-in* `node:sqlite` survives this — a native npm addon like
-> `better-sqlite3` would not.)
+> **Not (yet) a single self-contained file.** The binary bundles the runtime + deps
+> + entry code, but the Urban runtime loads the app's declarative files —
+> `nano.app.json`, `pages/`, `db/migrations/`, `prompts/` and the `actions/`
+> modules — from the **working directory at runtime** (via `readTextFile` + dynamic
+> `import`). `deno compile` *can* embed data dirs into its virtual filesystem with
+> [`--include`](https://docs.deno.com/runtime/reference/cli/compile/#including-data-files-or-directories),
+> but embedded files are only reachable relative to `import.meta.dirname`, whereas
+> the runtime resolves them against `Deno.cwd()` — so today you must ship the binary
+> **alongside those app files** and run it from that directory (it then boots
+> identically to `npm start`, same env vars). Making a truly self-contained binary
+> needs an *embeddable Urban app* capability in `@nanobpm/urban` (resolve the app
+> root from `import.meta.dirname` + `--include` the non-statically-analyzable
+> `actions/` dynamic imports), tracked separately. Add `--target` in the `deno.json`
+> `compile` task to cross-compile for another OS/arch. (Only Node's *built-in*
+> `node:sqlite` survives this — a native npm addon like `better-sqlite3` would not.)
 
 
 ## Persistence
