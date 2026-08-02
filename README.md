@@ -82,7 +82,7 @@ re-reviews come only from the UI/CLI). Point it at a non-default gateway with
 From the web UI, or from the CLI:
 
 ```sh
-npm run submit https://github.com/owner/repo/pull/42 5   # 5 = maxRounds
+npm run submit -- https://github.com/owner/repo/pull/42 5   # 5 = maxRounds
 ```
 
 Each submitted PR starts one durable `convergence-loop` instance that parks until
@@ -235,13 +235,13 @@ from the CLI:
 
 ```sh
 # submit a PR (parks after review-round at wait-review or wait-answer)
-npm run submit https://github.com/owner/repo/pull/42 5   # 5 = maxRounds
+npm run submit -- https://github.com/owner/repo/pull/42 5   # 5 = maxRounds
 
 # nudge a re-review (resumes an instance parked at wait-review)
-npm run review-ready owner/repo#42
+npm run review-ready -- owner/repo#42
 
 # answer an escalation (resumes an instance parked at wait-answer)
-npm run answer owner/repo#42 "merge as-is"
+npm run answer -- owner/repo#42 "merge as-is"
 
 # wipe all persisted PRs/rounds/escalations (drops + re-migrates app.db)
 npm run purge

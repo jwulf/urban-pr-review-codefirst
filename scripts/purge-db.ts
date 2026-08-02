@@ -25,7 +25,9 @@ function fileUrlToPath(u: string): string {
     return /^\/[A-Za-z]:/.test(p) ? p.slice(1) : p;
   }
   // Opaque form: everything after the scheme is the (possibly relative) path.
-  const p = u.slice("file:".length);
+  // Decode percent-escapes too (mirroring the authority branch above), so an
+  // encoded path like `file:./my%20app.db` resolves to `./my app.db`.
+  const p = decodeURIComponent(u.slice("file:".length));
   // Windows single-slash absolute form (`file:/C:/x`): strip the leading slash.
   return /^\/[A-Za-z]:/.test(p) ? p.slice(1) : p;
 }

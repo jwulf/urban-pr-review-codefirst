@@ -2,7 +2,7 @@
 // A poller (watching GitHub review events) would normally publish this; here it
 // is a manual nudge so you can drive the loop by hand.
 //
-//   npm run review-ready owner/repo#42
+//   npm run review-ready -- owner/repo#42
 import { WorkflowClient } from "@nanobpm/urban";
 import { convergenceLoop } from "../workflows/convergence-loop.ts";
 

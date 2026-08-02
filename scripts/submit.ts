@@ -1,7 +1,7 @@
 // Kick off one `convergence-loop` instance against the running engine.
 //
 //   npm start                                          # the worker-host service
-//   npm run submit https://github.com/o/r/pull/42      # create an instance
+ //   npm run submit -- https://github.com/o/r/pull/42   # create an instance
 //
 // The instance runs `review-round` (an EXTERNAL agent job) and then parks at a
 // durable catch event — `wait-review` (re-review) or `wait-answer` (escalation).

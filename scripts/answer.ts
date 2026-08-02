@@ -2,7 +2,7 @@
 // blocked, or round-cap). This is the human-in-the-loop half of the flow — a
 // real, engine-visible catch event a Temporal-style code-first surface cannot draw.
 //
-//   npm run answer owner/repo#42 "merge as-is"
+//   npm run answer -- owner/repo#42 "merge as-is"
 import { WorkflowClient } from "@nanobpm/urban";
 import { convergenceLoop } from "../workflows/convergence-loop.ts";
 
