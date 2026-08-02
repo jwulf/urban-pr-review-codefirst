@@ -1,7 +1,7 @@
 {
   "version": "5",
   "specifiers": {
-    "npm:@nanobpm/urban@~0.11.1": "0.11.1",
+    "npm:@nanobpm/urban@0.14": "0.14.0",
     "npm:@semantic-release/changelog@^6.0.3": "6.0.3_semantic-release@24.2.9",
     "npm:@semantic-release/git@^10.0.1": "10.0.1_semantic-release@24.2.9",
     "npm:@semantic-release/npm@^13.1.5": "13.1.5_semantic-release@24.2.9",
@@ -60,8 +60,8 @@
         "ws"
       ]
     },
-    "@nanobpm/urban@0.11.1": {
-      "integrity": "sha512-ICoEuJ/Vuseo+hZk00xGM8h1C11fMojmX4eU0cD2y7BCSvuD1+5YmYEXzSoZIiRLwxlA/Pg6eTkcm8WD5u3f9w==",
+    "@nanobpm/urban@0.14.0": {
+      "integrity": "sha512-/Si/bcAGBdhfYJbJku+jkTf54pNOY9LwdD/3aHKntWbPP93UWuFv/HqnIxpCGZSz/EjluyLPe9eLTLLQdrS3zg==",
       "dependencies": [
         "@nanobpm/nano-sdk",
         "@nanobpm/workflow",
@@ -537,8 +537,8 @@
         "parse-json@5.2.0"
       ]
     },
-    "create-urban-app@0.2.2": {
-      "integrity": "sha512-C8WiDidYAWD//4LtMAyicIbLXyR6uCz7bbZ92TkOx3sK1FkTdVIRypL7/mejxMHBPyjcnVqbTNLnme/8zcFmhw==",
+    "create-urban-app@0.4.0": {
+      "integrity": "sha512-0z01vDwyJS8xvhw+xUE/fWn/jRl1kdieV3jmhY3OMYnouOR1ns1Vs28JlrPq3+nairaS0oryqZmByuYM45n2kA==",
       "bin": true
     },
     "cross-spawn@7.0.6": {
@@ -1687,11 +1687,11 @@
   },
   "workspace": {
     "dependencies": [
-      "npm:@nanobpm/urban@~0.11.1"
+      "npm:@nanobpm/urban@0.14"
     ],
     "packageJson": {
       "dependencies": [
-        "npm:@nanobpm/urban@~0.11.1",
+        "npm:@nanobpm/urban@0.14",
         "npm:@semantic-release/changelog@^6.0.3",
         "npm:@semantic-release/git@^10.0.1",
         "npm:@semantic-release/npm@^13.1.5",
