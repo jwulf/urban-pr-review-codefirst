@@ -1,22 +1,44 @@
-import { defineFlow, envelope } from "@nanobpm/workflow";
-import { openDomain, type Domain } from "@nanobpm/domain";
+import { defineFlow, envelope, Table } from "@nanobpm/urban";
+import type { DataLayer } from "@nanobpm/urban";
+import type { Escalations, PullRequests, Rounds } from "../app/rows.ts";
 
 // ---------------------------------------------------------------------------
 // Persistence (parity with the model-first `urban-pr-review`). The `w.run`
 // handlers below are the app-owned record steps — the same writes the sibling
 // app makes from `workers/{persist-round,persist-escalation,finalize}` — but
 // hosted in-process by `@nanobpm/workflow`'s Worker instead of as standalone
-// `defineWorker`s. Data access goes through the typed data object
-// (`@nanobpm/domain`), not hand-written SQL.
+// `defineWorker`s. Data access goes through the Urban typed data layer
+// (`DataLayer.table<T>`), not hand-written SQL.
 //
-// The datasource is opened lazily and memoised on first persist, so the thin
-// CLI scripts (submit/answer/review-ready) can import this flow to start/signal
-// instances without ever touching the DB — only the worker host that actually
-// runs these handlers opens it.
+// The data layer is provisioned by the Urban runtime (`runFromEnv`) and injected
+// via `setPersistData` before the Worker starts, so the thin CLI scripts
+// (submit/answer/review-ready) can import this flow to start/signal instances
+// without ever touching the DB — only the worker host injects the data layer.
 // ---------------------------------------------------------------------------
-let _db: Domain | null = null;
-async function db(): Promise<Domain> {
-  return (_db ??= await openDomain("app"));
+// The persist handlers below run in-process inside `@nanobpm/workflow`'s Worker
+// (not the Urban worker host), so they receive no AppApi. `main.ts` injects the
+// Urban data layer here after the app provisions its datasource; `db()` exposes
+// the three tables these handlers write, over the injected `DataLayer`.
+interface PersistTables {
+  rounds: Table<Rounds>;
+  escalations: Table<Escalations>;
+  pull_requests: Table<PullRequests>;
+}
+let _data: DataLayer | null = null;
+export function setPersistData(d: DataLayer): void {
+  _data = d;
+}
+function db(): PersistTables {
+  if (!_data) {
+    throw new Error(
+      "persist data layer not injected — call setPersistData(app.data) before starting the Worker",
+    );
+  }
+  return {
+    rounds: _data.table<Rounds>("rounds", "id"),
+    escalations: _data.table<Escalations>("escalations", "id"),
+    pull_requests: _data.table<PullRequests>("pull_requests", "pr_key"),
+  };
 }
 
 const nowTs = (): string => new Date().toISOString();

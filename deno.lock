@@ -1,12 +1,11 @@
 {
   "version": "5",
   "specifiers": {
-    "npm:@nanobpm/workflow@0.4": "0.4.0_bpmn-auto-layout@2.0.0-alpha.2",
+    "npm:@nanobpm/urban@~0.11.1": "0.11.1",
     "npm:@semantic-release/changelog@^6.0.3": "6.0.3_semantic-release@24.2.9",
     "npm:@semantic-release/git@^10.0.1": "10.0.1_semantic-release@24.2.9",
     "npm:@semantic-release/npm@^13.1.5": "13.1.5_semantic-release@24.2.9",
     "npm:@types/node@22": "22.20.1",
-    "npm:bpmn-auto-layout@^2.0.0-alpha.2": "2.0.0-alpha.2",
     "npm:semantic-release@^24.2.9": "24.2.9"
   },
   "npm": {
@@ -44,12 +43,37 @@
     "@babel/helper-validator-identifier@7.29.7": {
       "integrity": "sha512-qehxGkRj55h/ff8EMaJ+cYhyaKlHIxqYDn682wQD7RNp9UujOQsHog2uS0r2vzr4pW+sXf90NeeayjcNaX3fFg=="
     },
+    "@camunda8/orchestration-cluster-api@10.0.0-alpha.13": {
+      "integrity": "sha512-cc67Vw23lKc2XxR7c5ZvVeCkIjyZ/rx+7Fk3DqHobcXulSWRyrbcbINL8ICUoOk1GgZpXI86cs+oO7WXF24nXA==",
+      "dependencies": [
+        "typed-env",
+        "zod"
+      ]
+    },
     "@colors/colors@1.5.0": {
       "integrity": "sha512-ooWCrlZP11i8GImSjTHYHLkvFDP48nS4+204nGb1RiX/WXYHmJA2III9/e2DWVabCESdW7hBAEzHRqUn9OUVvQ=="
     },
-    "@nanobpm/workflow@0.4.0_bpmn-auto-layout@2.0.0-alpha.2": {
-      "integrity": "sha512-HobXZ7+d5C9gaXkoE+4ICP1ykhX+yr9DyBrPw3wt7bHA7zwzoT2veIYcSBgiXgAE8n4wgfaJwiSyB00qqTAUig==",
+    "@nanobpm/nano-sdk@1.2.1": {
+      "integrity": "sha512-2aXu5KU3j9yedP+3b6ID0l3lRpPluJhngH0w2GdMHP0Uy8ssoFMgoWMUqXxclwelxagD2w1mYFDYKxSLZpevLw==",
       "dependencies": [
+        "@camunda8/orchestration-cluster-api",
+        "ws"
+      ]
+    },
+    "@nanobpm/urban@0.11.1": {
+      "integrity": "sha512-ICoEuJ/Vuseo+hZk00xGM8h1C11fMojmX4eU0cD2y7BCSvuD1+5YmYEXzSoZIiRLwxlA/Pg6eTkcm8WD5u3f9w==",
+      "dependencies": [
+        "@nanobpm/nano-sdk",
+        "@nanobpm/workflow",
+        "bpmn-auto-layout",
+        "create-urban-app"
+      ],
+      "bin": true
+    },
+    "@nanobpm/workflow@0.7.0_bpmn-auto-layout@2.0.0-alpha.2": {
+      "integrity": "sha512-OYLDEU1dGQFM3WCI/8MOEyu0GdjWyD827wa2IbaXh4DBq0G/RmjT6EicZTr+QiFRB2iPQcgurg++HFZSJSgqRw==",
+      "dependencies": [
+        "@nanobpm/nano-sdk",
         "bpmn-auto-layout"
       ],
       "optionalPeers": [
@@ -512,6 +536,10 @@
         "js-yaml",
         "parse-json@5.2.0"
       ]
+    },
+    "create-urban-app@0.2.2": {
+      "integrity": "sha512-C8WiDidYAWD//4LtMAyicIbLXyR6uCz7bbZ92TkOx3sK1FkTdVIRypL7/mejxMHBPyjcnVqbTNLnme/8zcFmhw==",
+      "bin": true
     },
     "cross-spawn@7.0.6": {
       "integrity": "sha512-uV2QOWP2nWzsy2aMp8aRibhi9dlzF5Hgh5SHaB9OiTGEyDTiJJyx0uy51QXdyWbtAHNua4XJzUKca3OzKUd3vA==",
@@ -1540,6 +1568,9 @@
         "tagged-tag"
       ]
     },
+    "typed-env@2.0.0": {
+      "integrity": "sha512-9nP+7+pctDlpFNKS4nkXPVkCOdAj7Ax8QeHhQkQ0hEGzsJ5ClgfhjwGN89q6s/EukHqyq9rDRzZ2yctCIEJGxA=="
+    },
     "uglify-js@3.19.3": {
       "integrity": "sha512-v3Xu+yuwBXisp6QYTcH4UbH+xYJXqnq2m/LtQVWKWzYc1iehYnLixoQDN9FH6/j9/oybfd6W9Ghwkl8+UMKTKQ==",
       "bin": true
@@ -1608,6 +1639,9 @@
         "strip-ansi"
       ]
     },
+    "ws@8.21.1": {
+      "integrity": "sha512-+0NTnW77fFN/DjQi6k/Sq/Yvk4Sgajw7urW8V+asjXnRgDs9gyGkdb7EzgfhA4goXsRIZKE28fzIXBHEzhuiWw=="
+    },
     "xtend@4.0.2": {
       "integrity": "sha512-LKYU1iAXJXUgAXn9URjiu+MWhyUXHsvfp7mcuYm9dSUKK0/CjtrUwFAxD82/mCWbtLsGjFIad0wIsod4zrTAEQ=="
     },
@@ -1646,21 +1680,22 @@
     },
     "yoctocolors@2.2.0": {
       "integrity": "sha512-xYqdZFUK/VYazNl/oCDYN+3WloWQwMfZxBoiNt6qNyk+xfOdi598muWE42rNZFp1kNOiqW936q5RhUdnpqElSg=="
+    },
+    "zod@4.4.3": {
+      "integrity": "sha512-ytENFjIJFl2UwYglde2jchW2Hwm4GJFLDiSXWdTrJQBIN9Fcyp7n4DhxJEiWNAJMV1/BqWfW/kkg71UDcHJyTQ=="
     }
   },
   "workspace": {
     "dependencies": [
-      "npm:@nanobpm/workflow@0.4",
-      "npm:bpmn-auto-layout@^2.0.0-alpha.2"
+      "npm:@nanobpm/urban@~0.11.1"
     ],
     "packageJson": {
       "dependencies": [
-        "npm:@nanobpm/workflow@0.4",
+        "npm:@nanobpm/urban@~0.11.1",
         "npm:@semantic-release/changelog@^6.0.3",
         "npm:@semantic-release/git@^10.0.1",
         "npm:@semantic-release/npm@^13.1.5",
         "npm:@types/node@22",
-        "npm:bpmn-auto-layout@^2.0.0-alpha.2",
         "npm:semantic-release@^24.2.9"
       ],
       "overrides": {

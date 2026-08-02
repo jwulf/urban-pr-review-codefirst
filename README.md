@@ -5,9 +5,11 @@ multi-round loop that drives a GitHub PR to convergence against an automated
 reviewer, escalating to a human when the reviewer is stuck or a round cap is hit.
 
 The model-first app draws this loop in `convergence-loop.bpmn`. Here the same loop
-is written with the `@nanobpm/workflow` declarative surface (`defineFlow`, ADR
-0044/0045). The SDK derives the executable BPMN (with DI), the job types, and the
-message names — no diagram, no task-type wiring, no correlation plumbing.
+is written with the code-first declarative surface (`defineFlow`, ADR 0044/0045),
+consumed through the published **[`@nanobpm/urban`](https://www.npmjs.com/package/@nanobpm/urban)**
+runtime (which re-exports `defineFlow`/`WorkflowClient`/`Worker` alongside the data
++ pages + actions surfaces). The SDK derives the executable BPMN (with DI), the job
+types, and the message names — no diagram, no task-type wiring, no correlation plumbing.
 
 **Feature parity with the model-first app.** This app persists to the same SQLite
 schema and serves the same schema-driven web frontend as
@@ -45,8 +47,10 @@ reviewer services both this code-first app and the model-first
 
 - A running **Nano gateway/engine** (default `http://localhost:8080`). This is
   what the app deploys to and what agents pull jobs from.
-- **[Deno](https://deno.land/)** (to run this app) and the **c8ctl CLI with the
-  `nano` plugin** installed (to hire/run agents).
+- **[Node](https://nodejs.org/)** ≥ 22 (to run this app — it hosts on Node's
+  built-ins: `node:sqlite`, `node:http`). **[Deno](https://deno.land/)** is
+  *optional*, used only to cross-compile a standalone binary (`npm run compile`).
+  Also install the **c8ctl CLI with the `nano` plugin** (to hire/run agents).
 - On each machine that will *host an agent*: the **GitHub CLI** logged in
   (`gh auth login`) or a `GITHUB_TOKEN`/`GH_TOKEN` in the environment, and the
   agent harness itself — e.g. the **[Copilot CLI](https://github.com/github/copilot-cli)**
@@ -63,7 +67,7 @@ the console.
 ### 2. Start the app
 
 ```sh
-deno task start        # → http://localhost:3000
+npm start              # → http://localhost:3000
 ```
 
 That applies the DB migrations, deploys the derived flow, hosts the in-process
@@ -77,7 +81,7 @@ re-reviews come only from the UI/CLI). Point it at a non-default gateway with
 From the web UI, or from the CLI:
 
 ```sh
-deno task submit https://github.com/owner/repo/pull/42 5   # 5 = maxRounds
+npm run submit https://github.com/owner/repo/pull/42 5   # 5 = maxRounds
 ```
 
 Each submitted PR starts one durable `convergence-loop` instance that parks until
@@ -219,10 +223,10 @@ Requires a running Nano gateway (default `http://localhost:8080`; override with
 ```sh
 # The one service: applies DB migrations, deploys the flow, hosts the app-owned
 # w.run record steps, AND serves the web frontend + review-ready poller.
-deno task start        # → http://localhost:3000
+npm start              # → http://localhost:3000
 ```
 
-`deno task start` now does everything: it applies the `db/migrations/` on boot
+`npm start` now does everything: it applies the `db/migrations/` on boot
 (creating `app.db`), deploys the flow, hosts the `persist-*` handlers, serves the
 schema-driven page runtime at `http://localhost:3000`, and runs the review-ready
 poller. Submit and answer PRs directly from the web UI, or drive the same actions
@@ -230,19 +234,19 @@ from the CLI:
 
 ```sh
 # submit a PR (parks after review-round at wait-review or wait-answer)
-deno task submit https://github.com/owner/repo/pull/42 5   # 5 = maxRounds
+npm run submit https://github.com/owner/repo/pull/42 5   # 5 = maxRounds
 
 # nudge a re-review (resumes an instance parked at wait-review)
-deno task review-ready owner/repo#42
+npm run review-ready owner/repo#42
 
 # answer an escalation (resumes an instance parked at wait-answer)
-deno task answer owner/repo#42 "merge as-is"
+npm run answer owner/repo#42 "merge as-is"
 
 # wipe all persisted PRs/rounds/escalations (drops + re-migrates app.db)
-deno task purge
+npm run purge
 ```
 
-The reviewer itself is not started by `deno task start` — it is the external
+The reviewer itself is not started by `npm start` — it is the external
 `senior:pr-review` job. Host it with a coding-agent harness so the automated
 review is fully decoupled from the durable orchestration.
 
@@ -252,37 +256,56 @@ Environment overrides: `PR_REVIEW_PORT` (default `3000`), `NANOBPMN_BASE_URL`
 `GITHUB_TOKEN` (enables the poller — without it the poller idles and re-reviews
 come only from the CLI/UI).
 
+## Compile to a standalone binary
+
+The app is authored on Node's built-ins (`node:sqlite`, `node:http`, `process.env`),
+which lets **Deno** cross-compile it into a single self-contained executable — no
+Node, no `node_modules`, no runtime install on the target box:
+
+```sh
+npm run compile        # → dist/urban-pr-review-codefirst  (via `deno compile`)
+```
+
+The binary embeds the pages, `db/migrations`, prompts and components as assets and
+boots identically to `npm start` (same env vars). Add `--target` in the
+`deno.json` `compile` task to cross-compile for another OS/arch. (Only Node's
+*built-in* `node:sqlite` survives this — a native npm addon like `better-sqlite3`
+would not.)
+
 ## Persistence
 
 Parity with the model-first app: the same three-table SQLite schema
 (`pull_requests`, `rounds`, `escalations`), the same `db/migrations/*.sql`, and
-the same generated typed data facade (`nano-generated/domain.ts`, exposing
-`db.pull_requests` / `db.rounds` / `db.escalations`). The `nano.app.json` manifest
-declares the `app` sqlite datasource (`${NANO_APP_DB_URL:-file:./app.db}`) and the
-migrations directory.
+the same typed rows (`app/rows.ts`), written through the **`@nanobpm/urban`** data
+layer (`DataLayer.table<T>(name, pk)`, exposing `pull_requests` / `rounds` /
+`escalations`). The `nano.app.json` manifest declares the `app` sqlite datasource
+(`${NANO_APP_DB_URL:-file:./app.db}`) and the migrations directory; the Urban
+runtime provisions the datasource and applies migrations on boot.
 
 The record steps that write these rows are the code-first counterpart of the
 model-first `workers/{persist-round,persist-escalation,finalize}` — but instead of
 standalone `defineWorker`s, they are the `w.run` handlers in
-`workflows/convergence-loop.ts`, hosted **in-process** by the `@nanobpm/workflow`
-`Worker` that `deno task start` runs. The datasource is opened lazily and memoised
-on first persist, so the thin CLI scripts (`submit`/`answer`/`review-ready`) can
-import the flow to start/signal instances without ever opening the DB — only the
-worker host does.
+`workflows/convergence-loop.ts`, hosted **in-process** by the `@nanobpm/urban`
+`Worker` that `npm start` runs. Those handlers get no `AppApi`, so `main.ts`
+injects the provisioned data layer into them via `setPersistData(app.data)` before
+the worker starts. The thin CLI scripts (`submit`/`answer`/`review-ready`) import
+the flow to start/signal instances without ever opening the DB — only the worker
+host injects the data layer.
 
 ## Frontend
 
-The same schema-driven page runtime as the model-first app (`pages/home.page.json`
-+ the `nano-generated/app-pages.ts` engine), served by `main.ts` at
-`http://localhost:3000`. It lists active + historical PRs, submits new ones, and
-answers or cancels runs inline. Because both apps commit the identical page schema
-and generated runtime, the UI is byte-for-byte the same; `main.ts` supplies the
-code-first action bindings (`start` → `wf.start`, escalation `message` →
-`wf.signal wait-answer`, `cancel` → gateway cancellation) behind it.
+The same schema-driven page runtime as the model-first app (`pages/home.page.json`),
+served by the **`@nanobpm/urban`** pages surface at `http://localhost:3000`. It
+lists active + historical PRs, submits new ones, and answers or cancels runs
+inline. Because both apps commit the identical page schema, the UI is byte-for-byte
+the same; the code-first action bindings in `actions/*` (`start` → `wf.start`,
+escalation `message` → `wf.signal wait-answer`, `cancel` → gateway cancellation)
+sit behind it, mounted by Urban ahead of the generic page actions.
 
 ## Link it into your Nano projects
 
-This is a standalone Deno project. Import it by reference (ADR 0041) so the
+This is a standalone Node project (Deno is used only as the cross-compiler).
+Import it by reference (ADR 0041) so the
 console reads it live from this directory:
 
 - In the console **Projects → Import by reference**, point at this folder, or
