@@ -1,5 +1,5 @@
-import { defineFlow, envelope, Table } from "@nanobpm/urban";
-import type { DataLayer } from "@nanobpm/urban";
+import { defineFlow, envelope } from "@nanobpm/urban";
+import type { DataLayer, Table } from "@nanobpm/urban";
 import type { Escalations, PullRequests, Rounds } from "../app/rows.ts";
 
 // ---------------------------------------------------------------------------

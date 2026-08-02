@@ -25,7 +25,9 @@ function fileUrlToPath(u: string): string {
     return /^\/[A-Za-z]:/.test(p) ? p.slice(1) : p;
   }
   // Opaque form: everything after the scheme is the (possibly relative) path.
-  return u.slice("file:".length);
+  const p = u.slice("file:".length);
+  // Windows single-slash absolute form (`file:/C:/x`): strip the leading slash.
+  return /^\/[A-Za-z]:/.test(p) ? p.slice(1) : p;
 }
 
 const path = fileUrlToPath(url);

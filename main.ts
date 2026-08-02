@@ -56,7 +56,18 @@ for (const jt of externalJobTypes(convergenceLoop)) {
 }
 
 // 3) Review-ready poller (idles when GITHUB_TOKEN is unset; webhook/manual still work).
-const pollTimer = setInterval(() => void pollOnce(app.data!), POLL_MS);
+//    Self-scheduling instead of setInterval so a slow GitHub call can never overlap
+//    two poll passes (which could double-signal `wait-review`). The next pass is
+//    scheduled POLL_MS *after* the previous one settles.
+let pollTimer: ReturnType<typeof setTimeout> | null = null;
+async function pollLoop(): Promise<void> {
+  try {
+    await pollOnce(app.data!);
+  } catch (err) {
+    console.error("poll error:", err instanceof Error ? err.message : err);
+  }
+  if (!shuttingDown) pollTimer = setTimeout(() => void pollLoop(), POLL_MS);
+}
 
 console.log(
   `urban-pr-review-codefirst serving on :${PORT} against ${BASE_URL} (poll ${POLL_MS}ms)`,
@@ -68,7 +79,7 @@ async function drainAndExit(): Promise<void> {
   if (shuttingDown) return;
   shuttingDown = true;
   console.log("\nshutting down…");
-  clearInterval(pollTimer);
+  if (pollTimer) clearTimeout(pollTimer);
   try {
     await worker.stop();
   } catch { /* worker never fully started */ }
@@ -80,3 +91,6 @@ async function drainAndExit(): Promise<void> {
 for (const sig of ["SIGINT", "SIGTERM"] as const) {
   process.on(sig, () => void drainAndExit());
 }
+
+// Kick off the first poll pass (after `shuttingDown` is declared).
+pollTimer = setTimeout(() => void pollLoop(), POLL_MS);

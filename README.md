@@ -47,10 +47,11 @@ reviewer services both this code-first app and the model-first
 
 - A running **Nano gateway/engine** (default `http://localhost:8080`). This is
   what the app deploys to and what agents pull jobs from.
-- **[Node](https://nodejs.org/)** ≥ 22 (to run this app — it hosts on Node's
-  built-ins: `node:sqlite`, `node:http`). **[Deno](https://deno.land/)** is
-  *optional*, used only to cross-compile a standalone binary (`npm run compile`).
-  Also install the **c8ctl CLI with the `nano` plugin** (to hire/run agents).
+- **[Node](https://nodejs.org/)** ≥ 22.6 (to run this app — it hosts on Node's
+  built-ins: `node:sqlite`, `node:http`; `@nanobpm/urban` declares
+  `engines.node >=22.6`). **[Deno](https://deno.land/)** is *optional*, used only
+  to cross-compile a standalone binary (`npm run compile`). Also install the
+  **c8ctl CLI with the `nano` plugin** (to hire/run agents).
 - On each machine that will *host an agent*: the **GitHub CLI** logged in
   (`gh auth login`) or a `GITHUB_TOKEN`/`GH_TOKEN` in the environment, and the
   agent harness itself — e.g. the **[Copilot CLI](https://github.com/github/copilot-cli)**
