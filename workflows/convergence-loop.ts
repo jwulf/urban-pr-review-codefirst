@@ -48,8 +48,8 @@ const nowTs = (): string => new Date().toISOString();
 // owns a *domain* rule: a blank prompt or status counts as "missing" so it can't
 // reach the escalation control flow or the UI answer form. Mirrors the old
 // `str(...) || fallback` intent and additionally guards whitespace-only values.
-function nonBlank(v: string | undefined): string | undefined {
-  return v != null && v.trim() !== "" ? v : undefined;
+function nonBlank(v: unknown): string | undefined {
+  return typeof v === "string" && v.trim() !== "" ? v : undefined;
 }
 
 // The external reviewer harness records its full (byte-capped) stdout on the
