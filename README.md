@@ -73,9 +73,9 @@ npm start              # → http://localhost:3000
 
 That applies the DB migrations, deploys the derived flow, hosts the in-process
 `w.run` record steps, serves the web UI at **<http://localhost:3000>**, and runs
-the review-ready poller (which needs `GITHUB_TOKEN` to watch GitHub — without it,
-re-reviews come only from the UI/CLI). Point it at a non-default gateway with
-`NANOBPMN_BASE_URL`; change the port with `PR_REVIEW_PORT`.
+the review-ready poller (which reads GitHub via the host `gh` CLI by default, or a
+`GITHUB_TOKEN` — without either, re-reviews come only from the UI/CLI). Point it at
+a non-default gateway with `NANOBPMN_BASE_URL`; change the port with `PR_REVIEW_PORT`.
 
 ### 3. Submit a PR
 
@@ -254,8 +254,10 @@ review is fully decoupled from the durable orchestration.
 Environment overrides: `PR_REVIEW_PORT` (default `3000`), `NANOBPMN_BASE_URL`
 (gateway), `NANO_APP_DB_URL` (default `file:./app.db`), `NANO_PR_POLL_MS`
 (poller interval, default `60000`), `NANO_PR_MAX_ROUNDS` (default `10`),
-`GITHUB_TOKEN` (enables the poller — without it the poller idles and re-reviews
-come only from the CLI/UI).
+`NANO_PR_GITHUB_TRANSPORT` (`auto` | `gh` | `token`, default `auto` — prefer the
+host `gh` CLI, else the token), `GITHUB_TOKEN` (token for the `token`/`auto`
+transport — without any usable transport the poller idles and re-reviews come
+only from the CLI/UI).
 
 ## Compile to a native binary (no runtime install required)
 
