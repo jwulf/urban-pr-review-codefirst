@@ -43,6 +43,15 @@ function db(): PersistTables {
 
 const nowTs = (): string => new Date().toISOString();
 
+// A string variable, or `undefined` when it is absent, empty, or whitespace-only.
+// The write boundary owns *type* defaults (undefined -> column DEFAULT/NULL); this
+// owns a *domain* rule: a blank prompt or status counts as "missing" so it can't
+// reach the escalation control flow or the UI answer form. Mirrors the old
+// `str(...) || fallback` intent and additionally guards whitespace-only values.
+function nonBlank(v: string | undefined): string | undefined {
+  return v != null && v.trim() !== "" ? v : undefined;
+}
+
 // The external reviewer harness records its full (byte-capped) stdout on the
 // result envelope; keep it for audit so a human can see what the agent did this
 // round without re-running it.
@@ -262,12 +271,13 @@ export const convergenceLoop = defineFlow(
             // workers/persist-escalation, agent-raised path).
             const { prKey, round, summary } = job.variables;
             // `status` drives the escalation kind (control flow), so it resolves to
-            // a concrete domain value here — an unclassified escalation is a question
-            // needing input. `question` is denormalised onto pull_requests below via
-            // an UPDATE (which now skips `undefined`), so it must be a concrete value
-            // for the answer form (ADR 0042) rather than left to a column default.
-            const status = job.variables.status ?? "needs_input";
-            const question = job.variables.question ?? "(no question provided)";
+            // a concrete domain value here — an unclassified (absent/blank) escalation
+            // is a question needing input. `question` is denormalised onto
+            // pull_requests below via an UPDATE (which now skips `undefined`), so it
+            // must be a concrete, non-blank value for the answer form (ADR 0042)
+            // rather than left to a column default or a blank UI prompt.
+            const status = nonBlank(job.variables.status) ?? "needs_input";
+            const question = nonBlank(job.variables.question) ?? "(no question provided)";
             const kind = status === "needs_input" ? "question" : "blocker";
             const ts = nowTs();
             const transcript = transcriptOf(job.variables as Record<string, unknown>);
