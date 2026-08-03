@@ -10,7 +10,7 @@ import { convergenceLoop } from "../workflows/convergence-loop.ts";
 
 const baseUrl = (process.env.NANOBPMN_BASE_URL ?? "http://localhost:8080").replace(/\/+$/, "");
 
-const prUrl = process.argv[2] ?? "https://github.com/Magikcraft/nano-bpm/pull/1";
+const prUrl = process.argv[2] ?? "https://github.com/owner/repo/pull/1";
 const maxRounds = Number(process.argv[3] ?? process.env.NANO_PR_MAX_ROUNDS ?? 10);
 
 // Parse "https://github.com/<owner>/<repo>/pull/<n>" into the fields the flow needs.

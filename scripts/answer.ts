@@ -7,7 +7,7 @@ import { WorkflowClient } from "@nanobpm/urban";
 import { convergenceLoop } from "../workflows/convergence-loop.ts";
 
 const baseUrl = (process.env.NANOBPMN_BASE_URL ?? "http://localhost:8080").replace(/\/+$/, "");
-const prKey = process.argv[2] ?? "Magikcraft/nano-bpm#1";
+const prKey = process.argv[2] ?? "owner/repo#1";
 const answer = process.argv[3] ?? "proceed";
 
 const client = new WorkflowClient({ baseUrl });
