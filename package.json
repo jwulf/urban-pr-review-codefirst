@@ -37,7 +37,7 @@
     "compile": "deno task compile"
   },
   "dependencies": {
-    "@nanobpm/urban": "^0.14.0"
+    "@nanobpm/urban": "^0.16.1"
   },
   "devDependencies": {
     "@types/node": "^22",
