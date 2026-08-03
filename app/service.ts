@@ -114,7 +114,8 @@ export async function answerEscalation(data: DataLayer, prKey: string, answer: s
 }
 
 /** How a caller identifies the run to cancel: by its engine `processInstanceKey` or, more
- *  ergonomically, by the `prKey` the status endpoint reports. At least one is required. */
+ * ergonomically, by the `prKey` the status endpoint reports. The cancel action rejects a
+ * request that supplies both, so exactly one selector reaches here. */
 export interface CancelSelector {
   processInstanceKey?: string;
   prKey?: string;
