@@ -43,19 +43,13 @@ function db(): PersistTables {
 
 const nowTs = (): string => new Date().toISOString();
 
-/** Read a string variable off a job, coercing/defaulting as the reference does. */
-function str(vars: Record<string, unknown>, key: string, fallback = ""): string {
-  const val = vars[key];
-  if (typeof val === "string") return val;
-  return val == null ? fallback : String(val);
-}
-
-/** Read an integer variable off a job. */
-function int(vars: Record<string, unknown>, key: string, fallback = 0): number {
-  const val = vars[key];
-  if (typeof val === "number") return val;
-  const n = Number(val);
-  return Number.isFinite(n) ? n : fallback;
+// A string variable, or `undefined` when it is absent, empty, or whitespace-only.
+// The write boundary owns *type* defaults (undefined -> column DEFAULT/NULL); this
+// owns a *domain* rule: a blank prompt or status counts as "missing" so it can't
+// reach the escalation control flow or the UI answer form. Mirrors the old
+// `str(...) || fallback` intent and additionally guards whitespace-only values.
+function nonBlank(v: unknown): string | undefined {
+  return typeof v === "string" && v.trim() !== "" ? v : undefined;
 }
 
 // The external reviewer harness records its full (byte-capped) stdout on the
@@ -84,7 +78,7 @@ const ReviewRoundIn = envelope("ReviewRoundIn", {
   prompt: "string",
   // Present only after a human answered an escalation and we re-review.
   answer: { type: "string", optional: true },
-}); 
+});
 
 /** What the reviewer agent returns: a verdict plus a human-readable summary. */
 const ReviewRoundOut = envelope("ReviewRoundOut", {
@@ -188,15 +182,13 @@ export const convergenceLoop = defineFlow(
           c.run("persist-converged", async (job) => {
             // The PR converged — record the final round and close the PR out.
             // This is the terminal, idempotent write (parity: workers/finalize).
-            const vars = job.variables as Record<string, unknown>;
-            const prKey = str(vars, "prKey");
-            const round = int(vars, "round");
-            const summary = str(vars, "summary");
+            const { prKey, round, summary } = job.variables;
             const ts = nowTs();
-            const d = await db();
+            const d = db();
             await d.rounds.insert({
               pr_key: prKey, round_no: round, status: "converged", summary,
-              transcript: transcriptOf(vars), started_at: ts, ended_at: ts,
+              transcript: transcriptOf(job.variables as Record<string, unknown>),
+              started_at: ts, ended_at: ts,
             });
             await d.pull_requests.update(prKey, {
               status: "converged", current_round: round, outcome: summary,
@@ -212,19 +204,17 @@ export const convergenceLoop = defineFlow(
         // Addressed but not converged: either escalate (round cap) or re-review.
         addressed: (c) =>
           c.branch("round >= maxRounds", {
+            // biome-ignore lint/suspicious/noThenProperty: `then`/`else` are the FlowBuilder.branch gateway arms (a BPMN exclusive gateway), not a thenable.
             then: (g) => {
               g.run("persist-escalation-maxrounds", async (job) => {
                 // Round cap hit: force a human decision. Record the capped round
                 // and open a blocker escalation (parity: workers/persist-escalation
                 // driven by the process's MAX_ROUNDS guard).
-                const vars = job.variables as Record<string, unknown>;
-                const prKey = str(vars, "prKey");
-                const round = int(vars, "round");
-                const summary = str(vars, "summary");
+                const { prKey, round, summary } = job.variables;
                 const question = "Round cap reached without convergence — merge as-is, or abandon?";
                 const ts = nowTs();
-                const transcript = transcriptOf(vars);
-                const d = await db();
+                const transcript = transcriptOf(job.variables as Record<string, unknown>);
+                const d = db();
                 await d.rounds.insert({
                   pr_key: prKey, round_no: round, status: "blocked", summary,
                   transcript, started_at: ts, ended_at: ts,
@@ -250,16 +240,13 @@ export const convergenceLoop = defineFlow(
                 // An addressed round that hasn't converged: record it and park the
                 // PR in `waiting_review` so the poller starts watching for the next
                 // review (parity: workers/persist-round).
-                const vars = job.variables as Record<string, unknown>;
-                const prKey = str(vars, "prKey");
-                const round = int(vars, "round");
-                const status = str(vars, "status", "addressed");
-                const summary = str(vars, "summary");
+                const { prKey, round, status, summary } = job.variables;
                 const ts = nowTs();
-                const d = await db();
+                const d = db();
                 await d.rounds.insert({
                   pr_key: prKey, round_no: round, status, summary,
-                  transcript: transcriptOf(vars), started_at: ts, ended_at: ts,
+                  transcript: transcriptOf(job.variables as Record<string, unknown>),
+                  started_at: ts, ended_at: ts,
                 });
                 await d.pull_requests.update(prKey, {
                   status: "waiting_review", current_round: round,
@@ -282,16 +269,19 @@ export const convergenceLoop = defineFlow(
             // needs_input / blocked: record the round that raised the escalation
             // and open an escalation row for a human to answer (parity:
             // workers/persist-escalation, agent-raised path).
-            const vars = job.variables as Record<string, unknown>;
-            const prKey = str(vars, "prKey");
-            const round = int(vars, "round");
-            const status = str(vars, "status", "needs_input");
-            const summary = str(vars, "summary");
-            const question = str(vars, "question") || "(no question provided)";
+            const { prKey, round, summary } = job.variables;
+            // `status` drives the escalation kind (control flow), so it resolves to
+            // a concrete domain value here — an unclassified (absent/blank) escalation
+            // is a question needing input. `question` is denormalised onto
+            // pull_requests below via an UPDATE (which now skips `undefined`), so it
+            // must be a concrete, non-blank value for the answer form (ADR 0042)
+            // rather than left to a column default or a blank UI prompt.
+            const status = nonBlank(job.variables.status) ?? "needs_input";
+            const question = nonBlank(job.variables.question) ?? "(no question provided)";
             const kind = status === "needs_input" ? "question" : "blocker";
             const ts = nowTs();
-            const transcript = transcriptOf(vars);
-            const d = await db();
+            const transcript = transcriptOf(job.variables as Record<string, unknown>);
+            const d = db();
             await d.rounds.insert({
               pr_key: prKey, round_no: round, status, summary,
               transcript, started_at: ts, ended_at: ts,
