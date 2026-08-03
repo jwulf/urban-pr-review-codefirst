@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/jwulf/urban-pr-review-codefirst/compare/v1.1.0...v1.2.0) (2026-08-03)
+
+
+### Features
+
+* **poller:** read GitHub reviews via the host `gh` CLI ([#6](https://github.com/jwulf/urban-pr-review-codefirst/issues/6)) ([5d50416](https://github.com/jwulf/urban-pr-review-codefirst/commit/5d50416e778332c5d6ab70962f574124c24a2042))
+
 # [1.1.0](https://github.com/jwulf/urban-pr-review-codefirst/compare/v1.0.0...v1.1.0) (2026-07-31)
 
 
