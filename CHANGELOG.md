@@ -1,3 +1,10 @@
+## [1.2.1](https://github.com/jwulf/urban-pr-review-codefirst/compare/v1.2.0...v1.2.1) (2026-08-03)
+
+
+### Bug Fixes
+
+* **deps:** bump @nanobpm/urban to ^0.17.1 ([#7](https://github.com/jwulf/urban-pr-review-codefirst/issues/7)) ([18b866e](https://github.com/jwulf/urban-pr-review-codefirst/commit/18b866e287b018c2dbbbee52a280daf69354851c))
+
 # [1.2.0](https://github.com/jwulf/urban-pr-review-codefirst/compare/v1.1.0...v1.2.0) (2026-08-03)
 
 
