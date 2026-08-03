@@ -8,6 +8,7 @@
 import type { DataLayer, EngineClient } from "@nanobpm/urban";
 import { convergenceLoop, MAX_ROUNDS, workflow } from "./engine.ts";
 import type { Escalations, PullRequests, Rounds } from "./rows.ts";
+import { fetchPrReviews } from "./github.ts";
 
 export interface ParsedPr {
   repo: string;
@@ -130,22 +131,18 @@ export async function cancelRun(data: DataLayer, engine: EngineClient, processIn
   return { ok: false, reason: "no PR for that instance" };
 }
 
-/** One poll pass: for each PR waiting on review, fetch fresh GitHub reviews and,
- *  when one has landed, resume the instance parked at `wait-review`. */
+/** One poll pass: for each PR waiting on review, fetch fresh GitHub reviews (via the host
+ *  `gh` CLI or a token — see `app/github.ts`) and, when one has landed, resume the instance
+ *  parked at `wait-review`. */
 export async function pollOnce(data: DataLayer) {
   const token = process.env.GITHUB_TOKEN ?? "";
-  if (!token) return; // no token → poller idles (webhook/manual still work)
-  const authHeader = "Bearer ".concat(token);
   const waiting = await prs(data).find({ status: "waiting_review" });
   for (const pr of waiting) {
     const { repo, number, pr_key: prKey } = pr;
     const lastId = pr.last_review_id ?? 0;
     try {
-      const r = await fetch(`https://api.github.com/repos/${repo}/pulls/${number}/reviews?per_page=100`, {
-        headers: { authorization: authHeader, accept: "application/vnd.github+json" },
-      });
-      if (!r.ok) continue;
-      const reviews = (await r.json()) as Array<{ id: number; state: string; submitted_at?: string }>;
+      const reviews = await fetchPrReviews(repo, number, token);
+      if (reviews === null) return; // no usable transport (no gh, no token) → idle
       const fresh = reviews
         .filter((rv) => rv.id > lastId && rv.submitted_at && (!pr.waiting_since || rv.submitted_at >= pr.waiting_since))
         .sort((a, b) => a.id - b.id)
