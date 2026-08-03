@@ -15,9 +15,9 @@
     "gen": "deno run -A npm:@nanobpm/urban@^0.16.1 gen",
     "gen:check": "deno run -A npm:@nanobpm/urban@^0.16.1 gen --check",
     "dev": "deno run -A npm:@nanobpm/urban@^0.16.1 dev",
-    "submit": "deno run --allow-net --allow-read --allow-run=gh --allow-env scripts/submit.ts",
-    "review-ready": "deno run --allow-net --allow-read --allow-run=gh --allow-env scripts/review-ready.ts",
-    "answer": "deno run --allow-net --allow-read --allow-run=gh --allow-env scripts/answer.ts",
+    "submit": "deno run --allow-net --allow-read --allow-env scripts/submit.ts",
+    "review-ready": "deno run --allow-net --allow-read --allow-env scripts/review-ready.ts",
+    "answer": "deno run --allow-net --allow-read --allow-env scripts/answer.ts",
     "compile": "deno compile --allow-net --allow-read --allow-write --allow-run=gh --allow-env -o dist/urban-pr-review-codefirst main.ts"
   }
 }
