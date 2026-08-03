@@ -1,3 +1,10 @@
+# [1.3.0](https://github.com/jwulf/urban-pr-review-codefirst/compare/v1.2.1...v1.3.0) (2026-08-03)
+
+
+### Features
+
+* GET /app/status + cancel-by-prKey affordances ([#8](https://github.com/jwulf/urban-pr-review-codefirst/issues/8)) ([3df7fb3](https://github.com/jwulf/urban-pr-review-codefirst/commit/3df7fb3416625cf3e0170c5612f3671deb4d9563)), closes [#12](https://github.com/jwulf/urban-pr-review-codefirst/issues/12)
+
 ## [1.2.1](https://github.com/jwulf/urban-pr-review-codefirst/compare/v1.2.0...v1.2.1) (2026-08-03)
 
 
