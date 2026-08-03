@@ -37,4 +37,4 @@ jobs:
           deno-version: v2.x
 
       - name: Typecheck (Deno)
-        run: deno check main.ts workflows/**/*.ts
+        run: deno check main.ts 'workflows/**/*.ts'
