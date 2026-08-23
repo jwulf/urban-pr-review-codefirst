@@ -44,5 +44,27 @@
       "path": "/hooks/submit",
       "module": "actions/webhook-submit.ts"
     }
+  ],
+  "workers": [
+    {
+      "taskType": "senior:pr-review",
+      "handler": "workers/senior-pr-review/worker.ts"
+    },
+    {
+      "taskType": "convergence-loop:persist-converged",
+      "handler": "workers/convergence-loop-persist-converged/worker.ts"
+    },
+    {
+      "taskType": "convergence-loop:persist-escalation-maxrounds",
+      "handler": "workers/convergence-loop-persist-escalation-maxrounds/worker.ts"
+    },
+    {
+      "taskType": "convergence-loop:persist-round",
+      "handler": "workers/convergence-loop-persist-round/worker.ts"
+    },
+    {
+      "taskType": "convergence-loop:persist-escalation",
+      "handler": "workers/convergence-loop-persist-escalation/worker.ts"
+    }
   ]
 }
