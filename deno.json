@@ -6,7 +6,7 @@
     "exclude": [".deno-cache/", "nano-generated/"]
   },
   "imports": {
-    "@nanobpm/urban": "npm:@nanobpm/urban@^0.81.0"
+    "@nanobpm/urban": "npm:@nanobpm/urban@^0.93.1"
   },
   "tasks": {
     "start": "deno run --allow-net --allow-read --allow-write --allow-run=gh --allow-env main.ts",
