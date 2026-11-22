@@ -1,3 +1,10 @@
+## [1.3.1](https://github.com/jwulf/urban-pr-review-codefirst/compare/v1.3.0...v1.3.1) (2026-11-22)
+
+
+### Bug Fixes
+
+* **deps:** adopt @nanobpm/urban ^0.99.1 ([#9](https://github.com/jwulf/urban-pr-review-codefirst/issues/9)) ([4ab7773](https://github.com/jwulf/urban-pr-review-codefirst/commit/4ab7773a3640eca2f225af81765fc5865f5b22b5)), closes [nano-ide#568](https://github.com/nano-ide/issues/568)
+
 # [1.3.0](https://github.com/jwulf/urban-pr-review-codefirst/compare/v1.2.1...v1.3.0) (2026-08-03)
 
 
