@@ -1,6 +1,7 @@
 {
   "version": "5",
   "specifiers": {
+    "npm:@nanobpm/urban@0.100": "0.100.0",
     "npm:@nanobpm/urban@~0.99.1": "0.99.1_moddle@8.2.1_zod@4.6.7",
     "npm:@semantic-release/changelog@^6.0.3": "6.0.3_semantic-release@24.2.9__typescript@5.9.3_typescript@5.9.3",
     "npm:@semantic-release/git@^10.0.1": "10.0.1_semantic-release@24.2.9__typescript@5.9.3_typescript@5.9.3",
@@ -54,7 +55,7 @@
     "@colors/colors@1.5.0": {
       "integrity": "sha512-ooWCrlZP11i8GImSjTHYHLkvFDP48nS4+204nGb1RiX/WXYHmJA2III9/e2DWVabCESdW7hBAEzHRqUn9OUVvQ=="
     },
-    "@hono/node-server@2.1.11_hono@4.13.19": {
+    "@hono/node-server@2.1.11_hono@4.13.21": {
       "integrity": "sha512-KzKz9vl4vvr1vgLHamj+g5uonbrj5NwAdO3yzOS6cd2HjALVeOgTgeZOyAzNxejbkfOOPIcvuf/Tg8l1pEFLog==",
       "dependencies": [
         "hono"
@@ -102,6 +103,20 @@
         "@camunda8/orchestration-cluster-api",
         "ws"
       ]
+    },
+    "@nanobpm/urban@0.100.0": {
+      "integrity": "sha512-gdYHV6IlX1wehLv2Y9IsbT13/ijOS9ZKr3vw+E2JvAA0TldH3PlqHRTEe08I9ylQnXSEmQ6vCzDSOH9Q2mvm6g==",
+      "dependencies": [
+        "@modelcontextprotocol/sdk",
+        "@nanobpm/agentic",
+        "@nanobpm/nano-app-schema",
+        "@nanobpm/nano-sdk",
+        "@nanobpm/workflow",
+        "bpmn-auto-layout",
+        "create-urban-app",
+        "yaml"
+      ],
+      "bin": true
     },
     "@nanobpm/urban@0.99.1_moddle@8.2.1_zod@4.6.7": {
       "integrity": "sha512-SR0TrVFZ+dQSWahcU/qHf5geHXvTtH2IM/1c8TFp2HAxZ8MOJee8B64saqzlQJfG+kyb9i5zGcauKdvHTjSH4Q==",
@@ -1057,8 +1072,8 @@
     "highlight.js@10.7.3": {
       "integrity": "sha512-tzcUFauisWKNHaRkN4Wjl/ZA07gENAjFl3J/c480dprkGTg5EQstgaNFqBfUqCq54kZRIEcreTsAgF/m2quD7A=="
     },
-    "hono@4.13.19": {
-      "integrity": "sha512-KmXvQAXwcAHV+muzbIwoJ23niEB5nMoDVr9WcRkU8mvjUECm/1+7v4Jgp7P7a+H6MLFrh+vXrGonGrGS+RQfkA=="
+    "hono@4.13.21": {
+      "integrity": "sha512-h9UsguqfVk4kjUwLvQpHOmOaJpW10jz9lp8bvKUUa04wJG/fabKFBqXZ06D6LFaeKQZtUZRVeg0gfkTTEsX7Mw=="
     },
     "hook-std@4.0.0": {
       "integrity": "sha512-IHI4bEVOt3vRUDJ+bFA9VUJlo7SzvFARPNLw75pqSmAOP2HmTWfFJtPvLBrDrlgjEYXY9zs7SFdHPQaJShkSCQ=="
@@ -2231,7 +2246,7 @@
   },
   "workspace": {
     "dependencies": [
-      "npm:@nanobpm/urban@~0.99.1"
+      "npm:@nanobpm/urban@0.100"
     ],
     "packageJson": {
       "dependencies": [
