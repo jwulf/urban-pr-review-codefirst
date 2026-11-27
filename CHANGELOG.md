@@ -1,3 +1,10 @@
+## [1.3.2](https://github.com/jwulf/urban-pr-review-codefirst/compare/v1.3.1...v1.3.2) (2026-11-27)
+
+
+### Bug Fixes
+
+* **deps:** adopt @nanobpm/urban ^0.101.1 ([#10](https://github.com/jwulf/urban-pr-review-codefirst/issues/10)) ([d3b81ef](https://github.com/jwulf/urban-pr-review-codefirst/commit/d3b81ef9355f40196abdee0d6618f3509e8b5fdd))
+
 ## [1.3.1](https://github.com/jwulf/urban-pr-review-codefirst/compare/v1.3.0...v1.3.1) (2026-11-22)
 
 
