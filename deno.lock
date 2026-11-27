@@ -1,11 +1,10 @@
 {
   "version": "5",
   "specifiers": {
-    "npm:@nanobpm/urban@~0.100.1": "0.100.1",
     "npm:@nanobpm/urban@~0.101.1": "0.101.1",
-    "npm:@semantic-release/changelog@^6.0.3": "6.0.3_semantic-release@24.2.9__typescript@5.9.3_typescript@5.9.3",
-    "npm:@semantic-release/git@^10.0.1": "10.0.1_semantic-release@24.2.9__typescript@5.9.3_typescript@5.9.3",
-    "npm:@semantic-release/npm@^13.1.5": "13.1.5_semantic-release@24.2.9__typescript@5.9.3",
+    "npm:@semantic-release/changelog@^6.0.3": "6.0.3_semantic-release@24.2.9_typescript@5.9.3",
+    "npm:@semantic-release/git@^10.0.1": "10.0.1_semantic-release@24.2.9_typescript@5.9.3",
+    "npm:@semantic-release/npm@^13.1.5": "13.1.5_semantic-release@24.2.9",
     "npm:@types/node@22": "22.20.1",
     "npm:semantic-release@^24.2.9": "24.2.9_typescript@5.9.3",
     "npm:typescript@^5.6.0": "5.9.3"
@@ -106,20 +105,6 @@
         "@camunda8/orchestration-cluster-api",
         "ws"
       ]
-    },
-    "@nanobpm/urban@0.100.1": {
-      "integrity": "sha512-e570/hulkHKAtym7jVrfjoWppusu7XVhijPjUbrTosXv0mxM+s5g1ARbDuPwi3DK9S3g5+7Y2eAsZGWLzbDqgQ==",
-      "dependencies": [
-        "@modelcontextprotocol/sdk",
-        "@nanobpm/agentic",
-        "@nanobpm/nano-app-schema",
-        "@nanobpm/nano-sdk",
-        "@nanobpm/workflow",
-        "bpmn-auto-layout",
-        "create-urban-app",
-        "yaml"
-      ],
-      "bin": true
     },
     "@nanobpm/urban@0.101.1": {
       "integrity": "sha512-H1D05FZrai3WPyGbbXpugwNzP5wiGi13+GJ0+amZO2zun/xa3bnh6iGGGIXPEVF3NWw73CeBAyQlh8rTZaegnQ==",
@@ -255,7 +240,7 @@
     "@sec-ant/readable-stream@0.4.1": {
       "integrity": "sha512-831qok9r2t8AlxLko40y2ebgSDhenenCatLVeW/uBtnHPyhHOvG0C7TvfgecV+wHzIm5KUICgzmVpWS+IMEAeg=="
     },
-    "@semantic-release/changelog@6.0.3_semantic-release@24.2.9__typescript@5.9.3_typescript@5.9.3": {
+    "@semantic-release/changelog@6.0.3_semantic-release@24.2.9_typescript@5.9.3": {
       "integrity": "sha512-dZuR5qByyfe3Y03TpmCvAxCyTnp7r5XwtHRf/8vD9EAn4ZWbavUX8adMtXYzE86EVh0gyLA7lm5yW4IV30XUag==",
       "dependencies": [
         "@semantic-release/error@3.0.0",
@@ -265,7 +250,7 @@
         "semantic-release"
       ]
     },
-    "@semantic-release/commit-analyzer@13.0.1_semantic-release@24.2.9__typescript@5.9.3": {
+    "@semantic-release/commit-analyzer@13.0.1_semantic-release@24.2.9": {
       "integrity": "sha512-wdnBPHKkr9HhNhXOhZD5a2LNl91+hs8CC2vsAVYxtZH3y0dV3wKn+uZSN61rdJQZ8EGxzWB3inWocBHV9+u/CQ==",
       "dependencies": [
         "conventional-changelog-angular",
@@ -285,7 +270,7 @@
     "@semantic-release/error@4.0.0": {
       "integrity": "sha512-mgdxrHTLOjOddRVYIYDo0fR3/v61GNN1YGkfbrjuIKg/uMgCd+Qzo3UAXJ+woLQQpos4pl5Esuw5A7AoNlzjUQ=="
     },
-    "@semantic-release/git@10.0.1_semantic-release@24.2.9__typescript@5.9.3_typescript@5.9.3": {
+    "@semantic-release/git@10.0.1_semantic-release@24.2.9_typescript@5.9.3": {
       "integrity": "sha512-eWrx5KguUcU2wUPaO6sfvZI0wPafUKAMNC18aXY4EnNcrZL86dEmpNVnC9uMpGZkmZJ9EfCVJBQx4pV4EMGT1w==",
       "dependencies": [
         "@semantic-release/error@3.0.0",
@@ -299,7 +284,7 @@
         "semantic-release"
       ]
     },
-    "@semantic-release/github@11.0.6_semantic-release@24.2.9__typescript@5.9.3": {
+    "@semantic-release/github@11.0.6_semantic-release@24.2.9": {
       "integrity": "sha512-ctDzdSMrT3H+pwKBPdyCPty6Y47X8dSrjd3aPZ5KKIKKWTwZBE9De8GtsH3TyAlw3Uyo2stegMx6rJMXKpJwJA==",
       "dependencies": [
         "@octokit/core",
@@ -321,7 +306,7 @@
         "url-join"
       ]
     },
-    "@semantic-release/npm@13.1.5_semantic-release@24.2.9__typescript@5.9.3": {
+    "@semantic-release/npm@13.1.5_semantic-release@24.2.9": {
       "integrity": "sha512-Hq5UxzoatN3LHiq2rTsWS54nCdqJHlsssGERCo8WlvdfFA9LoN0vO+OuKVSjtNapIc/S8C2LBj206wKLHg62mg==",
       "dependencies": [
         "@actions/core",
@@ -342,7 +327,7 @@
         "tempy"
       ]
     },
-    "@semantic-release/release-notes-generator@14.1.1_semantic-release@24.2.9__typescript@5.9.3": {
+    "@semantic-release/release-notes-generator@14.1.1_semantic-release@24.2.9": {
       "integrity": "sha512-Pbd2e2XRMUD0OxehHpgd5/YghsE76cddkRHSoDvKLK+OCy4Ewxn49rWR631MEUU01lgwF/uyVXvbnVuu6+Z6VA==",
       "dependencies": [
         "conventional-changelog-angular",
@@ -2254,7 +2239,7 @@
     ],
     "packageJson": {
       "dependencies": [
-        "npm:@nanobpm/urban@~0.100.1",
+        "npm:@nanobpm/urban@~0.101.1",
         "npm:@semantic-release/changelog@^6.0.3",
         "npm:@semantic-release/git@^10.0.1",
         "npm:@semantic-release/npm@^13.1.5",
